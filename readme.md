@@ -67,10 +67,3 @@
    - Melhorar a interface de relatórios com gráficos e insights detalhados.
 
 ---
-
-### Possíveis Melhorias
-   - **Sistema de pagamento**: Caso seja necessário cobrar pela inscrição em eventos.
-   - **Integração com calendários**: Sincronizar eventos diretamente com Google Calendar ou Outlook.
-   - **Automatização de lembretes**: Notificar participantes automaticamente quando um evento estiver próximo.
-   - **Funcionalidades de feedback**: Permitir que participantes avaliem o evento após sua conclusão.
-   - **Gamificação**: Criar um sistema de pontos ou conquistas para participantes ativos em vários eventos.
