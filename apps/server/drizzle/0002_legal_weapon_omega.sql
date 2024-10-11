@@ -1,0 +1,1 @@
+ALTER TABLE "registration" ALTER COLUMN "registration_date" SET DEFAULT now();
