@@ -1,3 +1,7 @@
+import dotenv from 'dotenv'
+
+dotenv.config()
+
 import Fastify from 'fastify'
 import {
   serializerCompiler,
@@ -15,6 +19,7 @@ import { events, registration, users } from './db/schema'
 import { Observer } from './lib/observer'
 import { makeLoginController } from './main/factories/controller/login'
 import { adaptFastifyRoute } from './main/adapter/fastify-route-adapter'
+import { env } from './config/env'
 
 const app = Fastify().withTypeProvider<ZodTypeProvider>()
 const observer = new Observer()
@@ -186,17 +191,52 @@ app.patch(
       params: z.object({
         eventId: z.string().cuid2(),
       }),
+      body: z.object({
+        userId: z.string().cuid2()
+      })
     },
   },
   async (req, reply) => {
     const { eventId } = req.params
+    const { userId } = req.body
     const [event] = await db
       .update(events)
       .set({
         status: 'cancelado',
       })
-      .where(eq(events.id, eventId))
+      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
       .returning()
+
+      console.log(event)
+    
+      if (!event) {
+        return reply.status(400).send({ message: 'this event are not your!' })
+      }
+
+    return reply.send({ event })
+  }
+)
+
+app.delete(
+  '/event/:eventId/:userId',
+  {
+    schema: {
+      params: z.object({
+        eventId: z.string().cuid2(),
+        userId: z.string().cuid2()
+      })
+    },
+  },
+  async (req, reply) => {
+    const { eventId, userId } = req.params
+    const [event] = await db
+      .delete(events)
+      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
+      .returning()
+
+    if (!event) {
+      return reply.status(400).send({ message: 'this event are not your!' })
+    }
 
     return reply.send({ event })
   }
@@ -250,7 +290,7 @@ app.patch(
         .send({ message: 'this spots for this event are sold out.' })
     }
 
-    const [alreadySubscribed] = await db.select().from(registration).where(eq(registration.userId, userId))
+    const [alreadySubscribed] = await db.select().from(registration).where(and(eq(registration.userId, userId), eq(registration.eventId, eventId)))
 
     if (alreadySubscribed) {
       return reply.status(403).send({ error: 'You cannot register for an event that you have already registered for.' })
@@ -319,7 +359,10 @@ app.get('/events', async (req, reply) => {
       status: events.status,
       startDate: events.startDate,
       endDate: events.endDate,
-      organizer: users.name,
+      organizer: {
+        id: users.id,
+        name: users.name
+      },
     })
     .from(events)
     .leftJoin(
@@ -349,6 +392,8 @@ app.register(async fastify => {
   )
 })
 
-app.listen({ port: 3333, host: '0.0.0.0' }, (err, address) => {
+const PORT = env.PORT || 3000
+
+app.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {
   console.log(`🚀 server listening on ${address}`)
 })
