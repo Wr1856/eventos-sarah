@@ -29,6 +29,8 @@ export const {
 					password: credentials.password,
 				});
 
+				console.log(response.data)
+
 				if (response.data.loggedIn) {
 					console.log(response.data);
 
