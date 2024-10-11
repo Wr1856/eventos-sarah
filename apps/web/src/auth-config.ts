@@ -69,7 +69,7 @@ export const {
 			}
 
 			if (trigger === "update" && isSessionAvailable(session)) {
-				token.user.name = session.user.name;
+				token.user = session.user;
 			}
 
 			return token;
