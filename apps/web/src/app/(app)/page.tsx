@@ -1,12 +1,8 @@
-import { signOut } from "@/auth-config";
 import { EventList } from "@/components/event-list";
 
-export default function Home() {
-  async function logout () {
-    'use server'
+export const revalidate = 900
 
-    await signOut()
-  }
+export default function Home() {
   return (
     <div className="rounded-lg bg-white border border-zinc-400 p-4 ">
       <h3 className="font-medium text-lg mb-4">Lista de eventos</h3>

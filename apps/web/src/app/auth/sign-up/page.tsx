@@ -46,7 +46,7 @@ export default function SignUp () {
         <input name="email" className="p-2 rounded border border-zinc-400 bg-zinc-100" type="text" placeholder="Email" />
         <input name="password" className="p-2 rounded border border-zinc-400 bg-zinc-100" type="password" placeholder="Senha" />
         <button className="rounded bg-orange-500 font-medium h-10 text-orange-50" type="submit">
-          Entrar
+          Cadastrar
         </button>
       </form>
     </div>
