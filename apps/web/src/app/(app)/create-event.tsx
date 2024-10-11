@@ -19,6 +19,7 @@ import { z } from "zod";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { spawn } from "child_process";
 
 const createEventSchema = z.object({
   title: z.string().min(1),
@@ -56,7 +57,11 @@ export function CreateEventDialog() {
     }
   }
 
-  if (session?.user.role !== 'organizador') return
+  if (session?.user) {
+    return <span>Carregando...</span>
+  }
+
+  if (session?.user.role !== 'organizador') return 
 
   return (
     <Dialog>
