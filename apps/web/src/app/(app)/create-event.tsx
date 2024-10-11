@@ -101,12 +101,12 @@ export function CreateEventDialog() {
               {...register('availableSlots')}
             />
             <span className="text-red-400 font-medium">{errors.availableSlots?.message}</span>
-            <input
-              className="p-2 rounded border border-zinc-400 bg-zinc-100"
-              type="text"
-              placeholder="Tipo de evento"
-              {...register('eventType')}
-            />
+            <select {...register('eventType')} className="p-2 rounded border border-zinc-400 bg-zinc-100">
+              <option disabled selected>Selecione tipo de conta</option>
+              <option value='online'>Online</option>
+              <option value='presencial'>Presencial</option>
+              <option value='híbrido'>Híbrido</option>
+            </select>
             <span className="text-red-400 font-medium">{errors.eventType?.message}</span>
             <span className="font-bold">Inicio e termino do evento</span>
             <DayPicker

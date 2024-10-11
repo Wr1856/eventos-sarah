@@ -5,7 +5,8 @@
 		"check-types": "tsc --noEmit",
 		"build": "turbo run build",
 		"dev": "turbo run dev",
-		"lint": "turbo run lint"
+		"lint": "turbo run lint",
+		"studio": "turbo run studio"
 	},
 	"devDependencies": {
 		"turbo": "^2.1.3"
