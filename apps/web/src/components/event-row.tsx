@@ -36,7 +36,7 @@ export function EventRow({ data }: EventRowProps) {
       })
       toast.success('Inscrição confirmada com sucesso!')
       queryClient.invalidateQueries({ queryKey: ['events']})
-    } catch (error: AxiosError) {
+    } catch (error) {
       toast.error(error.response.data.error || error.response.data.message)
     }
   }
@@ -60,7 +60,7 @@ export function EventRow({ data }: EventRowProps) {
       })
       toast.info('Voce cancelou o evento!')
       queryClient.invalidateQueries({ queryKey: ['events']})
-    } catch (error) {
+    } catch {
       toast.error('Voce nao pode cancelar um evento que nao e seu')
     }
   }
@@ -70,7 +70,7 @@ export function EventRow({ data }: EventRowProps) {
       await api.delete(`/event/${data.id}/${session?.user.id}`)
       toast.info('Voce excluiu o evento!')
       queryClient.invalidateQueries({ queryKey: ['events']})
-    } catch (error) {
+    } catch {
       toast.error('Voce nao pode excluir um evento que nao foi voce que criou')
     }
   }

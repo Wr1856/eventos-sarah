@@ -52,7 +52,7 @@ export const {
 		strategy: "jwt",
 	},
 	callbacks: {
-		async signIn({ account, profile }) {
+		async signIn({ account }) {
 			if (account?.provider === "credentials") {
 				return true;
 			}

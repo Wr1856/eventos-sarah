@@ -24,8 +24,8 @@ export default function SignUp () {
         role
       })
       toast.success('Conta criada com sucesso, va para tela de login.')
-    } catch (error) {
-      toast.error('error.response.data.message')
+    } catch {
+      toast.error('Ocorreu um erro tente novamente')
       return
       
     } 
