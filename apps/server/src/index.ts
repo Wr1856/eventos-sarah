@@ -250,6 +250,12 @@ app.patch(
         .send({ message: 'this spots for this event are sold out.' })
     }
 
+    const [alreadySubscribed] = await db.select().from(registration).where(eq(registration.userId, userId))
+
+    if (alreadySubscribed) {
+      return reply.status(403).send({ error: 'You cannot register for an event that you have already registered for.' })
+    }
+
     const [data] = await db
       .insert(registration)
       .values({
@@ -343,6 +349,6 @@ app.register(async fastify => {
   )
 })
 
-app.listen({ port: 3000, host: '0.0.0.0' }, (err, address) => {
+app.listen({ port: 3333, host: '0.0.0.0' }, (err, address) => {
   console.log(`🚀 server listening on ${address}`)
 })

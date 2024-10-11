@@ -40,7 +40,7 @@ export const events = table('events', {
   location: t.text('location').notNull(),
   availableSlots: t.integer('available_slots'),
   eventType: eventTypes('event_type').notNull(),
-  status: statusEnum('status').notNull(),
+  status: statusEnum('status').default('ativo').notNull(),
   organizerId: t
     .text('organizer_id')
     .references(() => users.id)
