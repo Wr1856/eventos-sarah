@@ -57,7 +57,7 @@ export function CreateEventDialog() {
     }
   }
 
-  if (session?.user) {
+  if (!session?.user) {
     return <span>Carregando...</span>
   }
 
