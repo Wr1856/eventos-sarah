@@ -51,9 +51,6 @@ importers:
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
-      '@types/node':
-        specifier: ^20
-        version: 20.16.11
       '@types/pg':
         specifier: ^8.11.10
         version: 8.11.10
@@ -66,9 +63,6 @@ importers:
       tsx:
         specifier: ^4.19.1
         version: 4.19.1
-      typescript:
-        specifier: ^5
-        version: 5.6.3
 
   apps/web:
     dependencies:
