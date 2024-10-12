@@ -1,38 +1,38 @@
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
-import Fastify from 'fastify'
+import Fastify from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
-} from 'fastify-type-provider-zod'
-import z from 'zod'
-import bcrypt from 'bcrypt'
-import { and, eq, sql } from 'drizzle-orm'
-import websocket from '@fastify/websocket'
-import cors from '@fastify/cors'
+} from "fastify-type-provider-zod";
+import z from "zod";
+import bcrypt from "bcrypt";
+import { and, eq, sql } from "drizzle-orm";
+import websocket from "@fastify/websocket";
+import cors from "@fastify/cors";
 
-import { db } from './db'
-import { events, registration, users } from './db/schema'
-import { Observer } from './lib/observer'
-import { makeLoginController } from './main/factories/controller/login'
-import { adaptFastifyRoute } from './main/adapter/fastify-route-adapter'
-import { env } from './config/env'
+import { db } from "./db";
+import { events, registration, users } from "./db/schema";
+import { Observer } from "./lib/observer";
+import { makeLoginController } from "./main/factories/controller/login";
+import { adaptFastifyRoute } from "./main/adapter/fastify-route-adapter";
+import { env } from "./config/env";
 
-const app = Fastify().withTypeProvider<ZodTypeProvider>()
-const observer = new Observer()
+const app = Fastify().withTypeProvider<ZodTypeProvider>();
+const observer = new Observer();
 
 app.register(cors, {
-  origin: '*',
-})
-app.register(websocket)
-app.setValidatorCompiler(validatorCompiler)
-app.setSerializerCompiler(serializerCompiler)
+  origin: "*",
+});
+app.register(websocket);
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
 
 app.post(
-  '/login',
+  "/login",
   {
     schema: {
       body: z.object({
@@ -41,11 +41,11 @@ app.post(
       }),
     },
   },
-  adaptFastifyRoute(makeLoginController())
-)
+  adaptFastifyRoute(makeLoginController()),
+);
 
 app.post(
-  '/users',
+  "/users",
   {
     schema: {
       body: z.object({
@@ -53,49 +53,49 @@ app.post(
         email: z.string().email(),
         password: z.string().min(6),
         role: z
-          .enum(['participante', 'visualizador', 'organizador'])
-          .default('participante'),
+          .enum(["participante", "visualizador", "organizador"])
+          .default("participante"),
       }),
     },
   },
   async (req, reply) => {
-    const { name, email, password, role } = req.body
+    const { name, email, password, role } = req.body;
 
     const userAlreadyExists = await db
       .select({ email: users.email })
       .from(users)
-      .where(eq(users.email, email))
+      .where(eq(users.email, email));
 
     if (userAlreadyExists[0]) {
       return reply
         .status(409)
-        .send({ message: 'Email already exists in system!' })
+        .send({ message: "Email already exists in system!" });
     }
 
-    const passwordHashed = await bcrypt.hash(password, 12)
+    const passwordHashed = await bcrypt.hash(password, 12);
 
     const [user] = await db
       .insert(users)
       .values({ name, email, password: passwordHashed, role })
-      .returning()
+      .returning();
 
-    return reply.send({ user })
-  }
-)
+    return reply.send({ user });
+  },
+);
 
 app.post(
-  '/events',
+  "/events",
   {
     schema: {
       body: z.object({
         title: z.string().min(1),
         description: z.string(),
-        eventType: z.enum(['online', 'presencial', 'híbrido']),
+        eventType: z.enum(["online", "presencial", "híbrido"]),
         startDate: z.coerce.date(),
         endDate: z.coerce.date(),
         location: z.string().min(2),
         availableSlots: z.coerce.number().min(1),
-        status: z.enum(['ativo', 'cancelado']),
+        status: z.enum(["ativo", "cancelado"]),
         organizerId: z.string().cuid2(),
       }),
     },
@@ -111,7 +111,7 @@ app.post(
       startDate,
       endDate,
       organizerId,
-    } = req.body
+    } = req.body;
     const [event] = await db
       .insert(events)
       .values({
@@ -125,14 +125,14 @@ app.post(
         endDate,
         organizerId,
       })
-      .returning()
+      .returning();
 
-    return reply.send({ event })
-  }
-)
+    return reply.send({ event });
+  },
+);
 
 app.put(
-  '/event/:eventId',
+  "/event/:eventId",
   {
     schema: {
       params: z.object({
@@ -141,12 +141,12 @@ app.put(
       body: z.object({
         title: z.string().min(1),
         description: z.string(),
-        eventType: z.enum(['online', 'presencial', 'híbrido']),
+        eventType: z.enum(["online", "presencial", "híbrido"]),
         startDate: z.coerce.date(),
         endDate: z.coerce.date(),
         location: z.string().min(2),
         availableSlots: z.coerce.number().min(1),
-        status: z.enum(['ativo', 'cancelado']),
+        status: z.enum(["ativo", "cancelado"]),
         organizerId: z.string().cuid2(),
       }),
     },
@@ -162,8 +162,8 @@ app.put(
       startDate,
       endDate,
       organizerId,
-    } = req.body
-    const { eventId } = req.params
+    } = req.body;
+    const { eventId } = req.params;
     const [event] = await db
       .update(events)
       .set({
@@ -178,72 +178,14 @@ app.put(
         organizerId,
       })
       .where(eq(events.id, eventId))
-      .returning()
+      .returning();
 
-    return reply.send({ event })
-  }
-)
+    return reply.send({ event });
+  },
+);
 
 app.patch(
-  '/event/:eventId/cancel',
-  {
-    schema: {
-      params: z.object({
-        eventId: z.string().cuid2(),
-      }),
-      body: z.object({
-        userId: z.string().cuid2()
-      })
-    },
-  },
-  async (req, reply) => {
-    const { eventId } = req.params
-    const { userId } = req.body
-    const [event] = await db
-      .update(events)
-      .set({
-        status: 'cancelado',
-      })
-      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
-      .returning()
-
-      console.log(event)
-    
-      if (!event) {
-        return reply.status(400).send({ message: 'this event are not your!' })
-      }
-
-    return reply.send({ event })
-  }
-)
-
-app.delete(
-  '/event/:eventId/:userId',
-  {
-    schema: {
-      params: z.object({
-        eventId: z.string().cuid2(),
-        userId: z.string().cuid2()
-      })
-    },
-  },
-  async (req, reply) => {
-    const { eventId, userId } = req.params
-    const [event] = await db
-      .delete(events)
-      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
-      .returning()
-
-    if (!event) {
-      return reply.status(400).send({ message: 'this event are not your!' })
-    }
-
-    return reply.send({ event })
-  }
-)
-
-app.patch(
-  '/event/:eventId/subscribe',
+  "/event/:eventId/cancel",
   {
     schema: {
       params: z.object({
@@ -255,19 +197,77 @@ app.patch(
     },
   },
   async (req, reply) => {
-    const { userId } = req.body
-    const { eventId } = req.params
+    const { eventId } = req.params;
+    const { userId } = req.body;
+    const [event] = await db
+      .update(events)
+      .set({
+        status: "cancelado",
+      })
+      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
+      .returning();
 
-    const eventAvailableSlotsCount = db.$with('event_available_slots_count').as(
+    console.log(event);
+
+    if (!event) {
+      return reply.status(400).send({ message: "this event are not your!" });
+    }
+
+    return reply.send({ event });
+  },
+);
+
+app.delete(
+  "/event/:eventId/:userId",
+  {
+    schema: {
+      params: z.object({
+        eventId: z.string().cuid2(),
+        userId: z.string().cuid2(),
+      }),
+    },
+  },
+  async (req, reply) => {
+    const { eventId, userId } = req.params;
+    const [event] = await db
+      .delete(events)
+      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
+      .returning();
+
+    if (!event) {
+      return reply.status(400).send({ message: "this event are not your!" });
+    }
+
+    return reply.send({ event });
+  },
+);
+
+app.patch(
+  "/event/:eventId/subscribe",
+  {
+    schema: {
+      params: z.object({
+        eventId: z.string().cuid2(),
+      }),
+      body: z.object({
+        userId: z.string().cuid2(),
+      }),
+    },
+  },
+  async (req, reply) => {
+    const { userId } = req.body;
+    const { eventId } = req.params;
+
+    const eventAvailableSlotsCount = db.$with("event_available_slots_count").as(
       db
         .select({
           eventId: registration.eventId,
-          slotsCount: sql`COUNT(${registration.id})`.as('slotsCount'),
+          slotsCount: sql`COUNT(${registration.id})`.as("slotsCount"),
         })
         .from(registration)
         .where(eq(registration.eventId, eventId))
-        .groupBy(registration.eventId)
-    )
+        .groupBy(registration.eventId),
+    );
 
     const result = await db
       .with(eventAvailableSlotsCount)
@@ -277,23 +277,33 @@ app.patch(
       .from(events)
       .leftJoin(
         eventAvailableSlotsCount,
-        eq(events.id, eventAvailableSlotsCount.eventId)
+        eq(events.id, eventAvailableSlotsCount.eventId),
       )
       .where(eq(events.id, eventId))
-      .limit(1)
+      .limit(1);
 
-    const { isAvailable } = result[0]
+    const { isAvailable } = result[0];
 
     if (!isAvailable) {
       return reply
         .status(410)
-        .send({ message: 'this spots for this event are sold out.' })
+        .send({ message: "this spots for this event are sold out." });
     }
 
-    const [alreadySubscribed] = await db.select().from(registration).where(and(eq(registration.userId, userId), eq(registration.eventId, eventId)))
+    const [alreadySubscribed] = await db
+      .select()
+      .from(registration)
+      .where(
+        and(eq(registration.userId, userId), eq(registration.eventId, eventId)),
+      );
 
     if (alreadySubscribed) {
-      return reply.status(403).send({ error: 'You cannot register for an event that you have already registered for.' })
+      return reply
+        .status(403)
+        .send({
+          error:
+            "You cannot register for an event that you have already registered for.",
+        });
     }
 
     const [data] = await db
@@ -302,14 +312,14 @@ app.patch(
         userId,
         eventId,
       })
-      .returning()
+      .returning();
 
-    return reply.send({ registration: data })
-  }
-)
+    return reply.send({ registration: data });
+  },
+);
 
 app.patch(
-  '/event/:eventId/unsubscribe',
+  "/event/:eventId/unsubscribe",
   {
     schema: {
       params: z.object({
@@ -321,28 +331,28 @@ app.patch(
     },
   },
   async (req, reply) => {
-    const { userId } = req.body
-    const { eventId } = req.params
+    const { userId } = req.body;
+    const { eventId } = req.params;
 
     await db
       .delete(registration)
       .where(
-        and(eq(registration.eventId, eventId), eq(registration.userId, userId))
-      )
-    return reply.status(204).send()
-  }
-)
+        and(eq(registration.eventId, eventId), eq(registration.userId, userId)),
+      );
+    return reply.status(204).send();
+  },
+);
 
-app.get('/events', async (req, reply) => {
-  const eventAvailableSlotsCount = db.$with('event_available_slots_count').as(
+app.get("/events", async (req, reply) => {
+  const eventAvailableSlotsCount = db.$with("event_available_slots_count").as(
     db
       .select({
         eventId: registration.eventId,
-        slotsCount: sql`COUNT(${registration.id})`.as('slotsCount'),
+        slotsCount: sql`COUNT(${registration.id})`.as("slotsCount"),
       })
       .from(registration)
-      .groupBy(registration.eventId)
-  )
+      .groupBy(registration.eventId),
+  );
   const result = await db
     .with(eventAvailableSlotsCount)
     .select({
@@ -353,7 +363,7 @@ app.get('/events', async (req, reply) => {
       availableSlots: events.availableSlots,
       occupiedVacancies:
         sql`COALESCE(${eventAvailableSlotsCount.slotsCount}, 0)`.mapWith(
-          Number
+          Number,
         ),
       eventType: events.eventType,
       status: events.status,
@@ -361,39 +371,39 @@ app.get('/events', async (req, reply) => {
       endDate: events.endDate,
       organizer: {
         id: users.id,
-        name: users.name
+        name: users.name,
       },
     })
     .from(events)
     .leftJoin(
       eventAvailableSlotsCount,
-      eq(eventAvailableSlotsCount.eventId, events.id)
+      eq(eventAvailableSlotsCount.eventId, events.id),
     )
-    .leftJoin(users, eq(users.id, events.organizerId))
+    .leftJoin(users, eq(users.id, events.organizerId));
 
-  return reply.send(result)
-})
+  return reply.send(result);
+});
 
-app.register(async fastify => {
+app.register(async (fastify) => {
   fastify.get(
-    '/notify',
+    "/notify",
     { websocket: true },
     async function wsHandler(socket, req) {
-      const { eventId } = req.params as { eventId: string }
+      const { eventId } = req.params as { eventId: string };
 
-      observer.subscribe(socket, eventId)
+      observer.subscribe(socket, eventId);
 
-      socket.onmessage = () => {}
+      socket.onmessage = () => {};
 
       socket.onclose = () => {
-        observer.unsubscribe(socket, eventId)
-      }
-    }
-  )
-})
+        observer.unsubscribe(socket, eventId);
+      };
+    },
+  );
+});
 
-const PORT = env.PORT || 3000
+const PORT = env.PORT || 3000;
 
-app.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {
-  console.log(`🚀 server listening on ${address}`)
-})
+app.listen({ port: PORT, host: "0.0.0.0" }, (err, address) => {
+  console.log(`🚀 server listening on ${address}`);
+});
