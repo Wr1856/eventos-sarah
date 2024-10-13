@@ -89,10 +89,10 @@ export function CreateEventDialog() {
       <DialogPortal>
         <DialogOverlay className="fixed inset-0 bg-black/75 backdrop-blur-lg" />
         <DialogContent className="w-full max-w-2xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-950 rounded-xl p-4 border border-zinc-900">
-          <Title>Informações do Evento</Title>
+          <Title className="mb-11">Informações do Evento</Title>
           <form
             onSubmit={handleSubmit(createEvent)}
-            className="flex flex-col gap-4 mb-4 pt-10"
+            className="flex flex-col gap-4 mb-4"
           >
             <div className="flex flex-col gap-1.5">
               <Label>Título do evento</Label>
