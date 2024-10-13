@@ -1,35 +1,87 @@
-import { signIn } from "@/auth-config"
-import Link from "next/link"
-import email from "next-auth/providers/email"
-import { z } from 'zod'
+import Link from "next/link";
+import Image from "next/image";
+import { z } from "zod";
+
+import { signIn } from "@/auth-config";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import background from "@/assets/sun-tornado.svg";
+import logoSarah from "@/assets/logo_sarah.svg";
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string()
-})
+  password: z.string(),
+});
 
-export default function SignIn () {
-  async function login (data: FormData) {
-    'use server'
+export default function SignIn() {
+  async function login(data: FormData) {
+    "use server";
 
-    const { email, password } = loginSchema.parse(Object.fromEntries(data))
+    const { email, password } = loginSchema.parse(Object.fromEntries(data));
 
-    await signIn('credentials', { email, password, redirectTo: '/' })
+    await signIn("credentials", { email, password, redirectTo: "/" });
   }
   return (
-    <div className="w-full h-screen flex items-center justify-center">
-      <form action={login} method="POST" className="w-full max-w-xl flex flex-col bg-white rounded-lg shadow-xl overflow-hidden p-4 space-y-4">
-        <h1 className="text-xl font-semibold text-center ">Entrar no sistema</h1>
-        <input name="email" className="p-2 rounded border border-zinc-400 bg-zinc-100" type="text" placeholder="Email" />
-        <input name="password" className="p-2 rounded border border-zinc-400 bg-zinc-100" type="password" placeholder="Senha" />
-        <button className="rounded bg-orange-500 font-medium h-10 text-orange-50" type="submit">
-          Entrar
-        </button>
+    <div className="w-full h-screen p-5 grid grid-cols-2 gap-10 auto-rows-auto place-items-center">
+      <div className="w-full">
+        <Image
+          src={background}
+          alt="Background Tornado"
+          className="aspect-square rounded-2xl size-full"
+        />
+      </div>
+      <form
+        action={login}
+        className="px-20 w-full flex flex-col gap-y-16 items-center justify-center"
+      >
+        <div className="w-80 flex flex-col gap-y-2 items-center justify-center">
+          <Image src={logoSarah} className="w-56" alt="SARAH" />
+          <p className="text-center leading-relaxed text-xs">
+            Rede SARAH de Hospitais de Reabilitação Associação das Pioneiras
+            Sociais.
+          </p>
+        </div>
+        <div className="w-full space-y-10">
+          <span className="font-bold text-xl before:w-5 before:h-0.5 before:bg-orange-500 relative before:absolute before:bottom-0 block">
+            Acessar conta
+          </span>
 
-        <p className="text-center">
-          Se voce nao tem um cadastro considere criar uma <Link href="/auth/sign-up" className="hover:underline underline-offset-2 text-blue-500">clicando aqui.</Link>
-        </p>
+          <div className="space-y-5 w-full">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                name="email"
+                placeholder="example@example.com"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                name="password"
+                placeholder="****"
+                type="password"
+              />
+            </div>
+          </div>
+        </div>
+        <Button className="w-44" type="submit">
+          Acessar conta
+        </Button>
+
+        <span className="text-zinc-400 text-xs">
+          Não tem cadastro?{" "}
+          <Link
+            href="/auth/sign-up"
+            className="font-bold text-zinc-100 hover:underline underline-offset-2"
+          >
+            Criar conta
+          </Link>
+        </span>
       </form>
     </div>
-  )
+  );
 }

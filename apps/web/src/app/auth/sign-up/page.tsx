@@ -69,7 +69,7 @@ export default function SignUp() {
           </p>
         </div>
         <div className="w-full space-y-10">
-          <span className="font-bol text-xl before:w-5 before:h-0.5 before:bg-orange-500 relative before:absolute before:bottom-0 block">
+          <span className="font-bold text-xl before:w-5 before:h-0.5 before:bg-orange-500 relative before:absolute before:bottom-0 block">
             Criar conta
           </span>
 
@@ -79,7 +79,7 @@ export default function SignUp() {
               <Input id="name" placeholder="John Doe" />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">E-mail</Label>
               <Input id="email" placeholder="example@example.com" />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -110,7 +110,7 @@ export default function SignUp() {
         <span className="text-zinc-400 text-xs">
           Já tem cadastro?{" "}
           <Link
-            href="/sign-in"
+            href="/auth/sign-in"
             className="font-bold text-zinc-100 hover:underline underline-offset-2"
           >
             Acessar conta
