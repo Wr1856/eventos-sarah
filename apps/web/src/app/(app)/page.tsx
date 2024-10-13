@@ -2,18 +2,16 @@ import { EventList } from "@/components/event-list";
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
 import { Plus } from "lucide-react";
+import { CreateEventDialog } from "./create-event";
 
 export const revalidate = 900;
 
 export default function Home() {
   return (
-    <div className="px-32">
+    <div className="px-32 mt-9">
       <div className="flex items-center justify-between">
         <Title>Eventos</Title>
-        <Button variant="secondary">
-          <Plus className="size-4" />
-          Cadastrar evento
-        </Button>
+        <CreateEventDialog />
       </div>
 
       <EventList />

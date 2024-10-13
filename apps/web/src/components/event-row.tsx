@@ -137,7 +137,7 @@ export function EventRow({ data }: EventRowProps) {
       </td>
     </tr> */}
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-3 flex gap-3 items-center justify-between">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex gap-3 items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-4">
             <span className="font-semibold">{data.title}</span>
