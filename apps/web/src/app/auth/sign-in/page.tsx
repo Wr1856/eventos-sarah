@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import background from "@/assets/sun-tornado.svg";
 import logoSarah from "@/assets/logo_sarah.svg";
+import { Title } from "@/components/ui/title";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -43,9 +44,7 @@ export default function SignIn() {
           </p>
         </div>
         <div className="w-full space-y-10">
-          <span className="font-bold text-xl before:w-5 before:h-0.5 before:bg-orange-500 relative before:absolute before:bottom-0 block">
-            Acessar conta
-          </span>
+          <Title>Acessar conta</Title>
 
           <div className="space-y-5 w-full">
             <div className="flex flex-col gap-1.5">

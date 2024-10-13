@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: "bg-orange-500 text-orange-950",
-        secondary: "bg-orange-950 text-orange-500 hover:text-orange-50",
+        secondary: "bg-zinc-900 text-orange-500 hover:text-orange-50",
       },
     },
     defaultVariants: {

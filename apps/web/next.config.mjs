@@ -7,6 +7,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    remotePatterns: [{ hostname: "api.dicebear.com" }],
+  },
 };
 
 export default nextConfig;
