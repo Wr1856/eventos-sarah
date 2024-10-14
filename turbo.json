@@ -12,6 +12,7 @@
       "persistent": true,
       "cache": false
     },
-    "studio": {}
+    "studio": {},
+    "migrate": {}
   }
 }

@@ -1,26 +1,26 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useState } from "react";
+import { DayPicker, type DateRange } from "react-day-picker";
+import { ptBR } from "react-day-picker/locale";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { Calendar, CircleX, Plus } from "lucide-react";
+import { format } from "date-fns";
+import "react-day-picker/style.css";
+
 import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogOverlay,
-  DialogPortal,
   DialogTrigger,
-} from "@radix-ui/react-dialog";
-import { useState } from "react";
-import { DayPicker, type DateRange } from "react-day-picker";
-import { ptBR } from "react-day-picker/locale";
-import "react-day-picker/style.css";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+} from "@/components/ui/dialog";
 import { api } from "@/lib/api";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { Title } from "@/components/ui/title";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,6 +31,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverArrow,
+  PopoverContent,
+  PopoverPortal,
+  PopoverTrigger,
+} from "@radix-ui/react-popover";
+import { cn } from "@/lib/utils";
+import { TextError } from "@/components/text-error";
 
 const createEventSchema = z.object({
   title: z.string().min(1),
@@ -39,6 +49,10 @@ const createEventSchema = z.object({
   availableSlots: z.coerce.number(),
   eventType: z.string().min(1),
   status: z.string().default("ativo"),
+  date: z.object({
+    from: z.date(),
+    to: z.date(),
+  }),
 });
 
 type EventProps = z.infer<typeof createEventSchema>;
@@ -51,6 +65,7 @@ export function CreateEventDialog() {
   const {
     handleSubmit,
     register,
+    control,
     formState: { errors },
   } = useForm<EventProps>({
     resolver: zodResolver(createEventSchema),
@@ -86,89 +101,131 @@ export function CreateEventDialog() {
           Cadastrar evento
         </Button>
       </DialogTrigger>
-      <DialogPortal>
-        <DialogOverlay className="fixed inset-0 bg-black/75 backdrop-blur-lg" />
-        <DialogContent className="w-full max-w-2xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-950 rounded-xl p-4 border border-zinc-900">
-          <Title className="mb-11">Informações do Evento</Title>
-          <form
-            onSubmit={handleSubmit(createEvent)}
-            className="flex flex-col gap-4 mb-4"
-          >
-            <div className="flex flex-col gap-1.5">
-              <Label>Título do evento</Label>
-              <Input type="text" placeholder="Titulo" {...register("title")} />
-              <span className="text-red-400 font-medium">
-                {errors.title?.message}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Informações extras</Label>
-              <Input
-                placeholder="Descrição"
-                multiline
-                {...register("description")}
-              />
-              <span className="text-red-400 font-medium">
-                {errors.description?.message}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Local do evento</Label>
-              <Input
-                type="text"
-                placeholder="Local"
-                {...register("location")}
-              />
-              <span className="text-red-400 font-medium">
-                {errors.location?.message}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Quantodade de vagas</Label>
-              <Input
-                type="text"
-                placeholder="Total de vagas"
-                {...register("availableSlots")}
-              />
-              <span className="text-red-400 font-medium">
-                {errors.availableSlots?.message}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Categoria</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione tipo o evento" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="presencial">Presencial</SelectItem>
-                  <SelectItem value="híbrido">Híbrido</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <DialogContent>
+        <Title className="mb-11">Informações do Evento</Title>
+        <form
+          onSubmit={handleSubmit(createEvent)}
+          className="w-full grid grid-cols-2 gap-4 mb-4"
+        >
+          <div className="w-full flex flex-col gap-1.5">
+            <Label>Título do evento</Label>
+            <Input type="text" placeholder="Titulo" {...register("title")} />
+            <TextError isVisible={!!errors.title?.message}>
+              {errors.title?.message}
+            </TextError>
+          </div>
 
-            <span className="text-red-400 font-medium">
+          <div className="flex flex-col gap-1.5">
+            <Label>Informações extras</Label>
+            <Textarea placeholder="Descrição" {...register("description")} />
+            <TextError isVisible={!!errors.description?.message}>
+              {errors.description?.message}
+            </TextError>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Local do evento</Label>
+            <Input type="text" placeholder="Local" {...register("location")} />
+            <TextError isVisible={!!errors.location?.message}>
+              {errors.location?.message}
+            </TextError>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Quantodade de vagas</Label>
+            <Input
+              type="text"
+              placeholder="obs: '0' para vagas ilimitadas"
+              {...register("availableSlots")}
+            />
+            <TextError isVisible={!!errors.availableSlots?.message}>
+              {errors.availableSlots?.message}
+            </TextError>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Categoria</Label>
+            <Controller
+              {...register("eventType")}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Select onValueChange={onChange} value={value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione tipo o evento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="online">Online</SelectItem>
+                    <SelectItem value="presencial">Presencial</SelectItem>
+                    <SelectItem value="híbrido">Híbrido</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <TextError isVisible={!!errors.eventType?.message}>
               {errors.eventType?.message}
-            </span>
-            <span className="font-bold">Inicio e termino do evento</span>
-            {/*<DayPicker
-              locale={ptBR}
-              mode="range"
-              selected={selected}
-              onSelect={setSelected}
-            />*/}
-            <div className="flex flex-1 items-center justify-end gap-2">
-              <DialogClose>
-                <Button variant="secondary" type="submit">
-                  Voltar
-                </Button>
-              </DialogClose>
-              <Button type="submit">Salvar</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </DialogPortal>
+            </TextError>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Inicio e termino do evento</Label>
+            <Controller
+              {...register("date")}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex items-center gap-3 bg-zinc-900 outline-none p-3 rounded-xl w-full font-medium text-sm text-zinc-600 border border-transparent hover:border-zinc-800",
+                        value && "text-zinc-100",
+                      )}
+                    >
+                      <Calendar className="size-4" />
+                      <span>
+                        {value
+                          ? format(value.from, "d' de 'LLL")
+                              .concat(" até ")
+                              .concat(format(value.to, "d' de 'LLL"))
+                          : "Quando?"}
+                      </span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverPortal>
+                    <PopoverContent
+                      side="right"
+                      align="start"
+                      className="z-50 max-w-fit bg-zinc-900 rounded-xl p-4 border border-zinc-800"
+                    >
+                      <PopoverArrow asChild>
+                        <div className="size-1 border-4 border-transparent border-t-zinc-800" />
+                      </PopoverArrow>
+                      <DayPicker
+                        locale={ptBR}
+                        mode="range"
+                        selected={value}
+                        onSelect={onChange}
+                      />
+                    </PopoverContent>
+                  </PopoverPortal>
+                </Popover>
+              )}
+            />
+            <TextError isVisible={!!errors.date?.message}>
+              {errors.date?.message}
+            </TextError>
+          </div>
+
+          <div className="col-span-2 flex flex-1 items-center justify-end gap-2">
+            <DialogClose>
+              <Button variant="secondary" type="submit">
+                Voltar
+              </Button>
+            </DialogClose>
+            <Button type="submit">Salvar</Button>
+          </div>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }

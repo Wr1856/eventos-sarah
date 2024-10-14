@@ -1,15 +1,16 @@
 {
-	"name": "eventos-sarah",
-	"private": true,
-	"scripts": {
-		"check-types": "tsc --noEmit",
-		"build": "turbo run build",
-		"dev": "turbo run dev",
-		"lint": "turbo run lint",
-		"studio": "turbo run studio"
-	},
-	"devDependencies": {
-		"turbo": "^2.1.3"
-	},
-	"packageManager": "pnpm@9.12.1"
+  "name": "eventos-sarah",
+  "private": true,
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "studio": "turbo run studio",
+    "migrate": "turbo run migrate"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.3"
+  },
+  "packageManager": "pnpm@9.12.1"
 }
