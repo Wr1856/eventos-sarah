@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import scrollbar from "tailwind-scrollbar";
+import tailwindCssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   content: [
@@ -17,6 +18,7 @@ const config: Config = {
   },
   plugins: [
     scrollbar({ nocompatible: true, preferredStrategy: "pseudoelements" }),
+    tailwindCssAnimate,
   ],
 };
 export default config;

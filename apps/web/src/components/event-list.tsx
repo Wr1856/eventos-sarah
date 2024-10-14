@@ -40,7 +40,7 @@ export function EventList() {
   if (!data) return;
 
   return (
-    <div className="h-96 space-y-4 mt-11 px-24 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar scrollbar-thumb-zinc-800 scrollbar-track-zinc-900 overflow-y-auto">
+    <div className="h-[60vh] space-y-4 mt-11 px-24 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar scrollbar-thumb-zinc-800 scrollbar-track-zinc-900 overflow-y-auto">
       {data.map((event) => (
         <EventRow key={event.id} data={event} />
       ))}
