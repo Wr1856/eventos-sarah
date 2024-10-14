@@ -104,7 +104,7 @@ export function CreateEventDialog() {
         <Title className="mb-11">Informações do Evento</Title>
         <form
           onSubmit={handleSubmit(createEvent)}
-          className="w-full grid grid-cols-2 gap-4 mb-4"
+          className="w-full grid grid-cols-2 gap-4"
         >
           <div className="w-full flex flex-col gap-1.5">
             <Label>Título do evento</Label>

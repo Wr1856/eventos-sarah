@@ -10,9 +10,8 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+      gridTemplateColumns: {
+        event: "1fr 448px",
       },
     },
   },
