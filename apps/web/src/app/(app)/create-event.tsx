@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { Calendar, CircleX, Plus } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import { format } from "date-fns";
 import "react-day-picker/style.css";
 
@@ -59,7 +59,6 @@ type EventProps = z.infer<typeof createEventSchema>;
 
 export function CreateEventDialog() {
   const { data: session } = useSession();
-  const [selected, setSelected] = useState<DateRange>();
   const queryClient = useQueryClient();
 
   const {
@@ -74,8 +73,8 @@ export function CreateEventDialog() {
   async function createEvent(data: EventProps) {
     const body = {
       ...data,
-      startDate: selected?.from?.toISOString(),
-      endDate: selected?.to?.toISOString(),
+      startDate: data.date.from.toISOString(),
+      endDate: data.date.to.toISOString(),
       organizerId: session?.user.id,
     };
     try {
