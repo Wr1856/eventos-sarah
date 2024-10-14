@@ -298,12 +298,10 @@ app.patch(
       );
 
     if (alreadySubscribed) {
-      return reply
-        .status(403)
-        .send({
-          error:
-            "You cannot register for an event that you have already registered for.",
-        });
+      return reply.status(403).send({
+        error:
+          "You cannot register for an event that you have already registered for.",
+      });
     }
 
     const [data] = await db
@@ -383,6 +381,33 @@ app.get("/events", async (req, reply) => {
 
   return reply.send(result);
 });
+
+app.get(
+  "/event/:eventId/participants",
+  {
+    schema: {
+      params: z.object({
+        eventId: z.string().cuid2(),
+      }),
+    },
+  },
+  async (req, res) => {
+    const { eventId } = req.params;
+
+    const participants = await db
+      .select({
+        id: registration.id,
+        name: users.name,
+        email: users.email,
+        registrationDate: registration.registrationDate,
+      })
+      .from(registration)
+      .where(eq(registration.eventId, eventId))
+      .leftJoin(users, eq(users.id, registration.userId));
+
+    return { participants };
+  },
+);
 
 app.register(async (fastify) => {
   fastify.get(
