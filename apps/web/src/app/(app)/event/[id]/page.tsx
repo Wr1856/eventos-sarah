@@ -101,13 +101,11 @@ export default function Event() {
             isPast(event.startDate) ||
             event.status === "cancelado",
           message:
-            event.status === "cancelado"
+            event.status === "cancelado" || isPast(event.endDate)
               ? "00:00:00:00"
-              : isPast(event.endDate)
-                ? "Evento finalizado"
-                : isBefore(event.startDate, now)
-                  ? "Evento iniciado"
-                  : countdown,
+              : isBefore(event.startDate, now)
+                ? "Evento iniciado"
+                : countdown,
         };
       }
     }
