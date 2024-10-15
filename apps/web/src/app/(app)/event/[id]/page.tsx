@@ -1,5 +1,19 @@
 "use client";
 
+import {
+  areIntervalsOverlapping,
+  differenceInMilliseconds,
+  formatDistance,
+  formatDuration,
+  intervalToDuration,
+  isBefore,
+  isPast,
+  isToday,
+} from "date-fns";
+import { Clock4, User, Users2 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,16 +23,8 @@ import {
 } from "@/components/ui/dialog";
 import { Title } from "@/components/ui/title";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, formatTowDigits } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import {
-  areIntervalsOverlapping,
-  formatDistance,
-  intervalToDuration,
-} from "date-fns";
-import { Clock4, User, Users2 } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
 interface Participant {
   id: string;
@@ -47,9 +53,7 @@ export interface EventType {
 
 export default function Event() {
   const { id } = useParams<{ id: string }>();
-  const [timeUntilEventStart, setTimeUntilEventStart] = useState<string | null>(
-    null,
-  );
+  const [timeUntilEventStart, setTimeUntilEventStart] = useState<string>();
 
   const { data: participants } = useQuery<Participant[]>({
     queryKey: ["participants", id],
@@ -67,37 +71,62 @@ export default function Event() {
     },
   });
 
-  function isEventExpired() {
-    if (event) {
-      const isOverllaping = areIntervalsOverlapping(
-        { start: event.startDate, end: event.endDate },
-        { start: event.endDate, end: new Date() },
-      );
-      return isOverllaping;
-    }
-  }
-
-  const isOverllaping = isEventExpired();
+  const isEventExpired = isPast(event?.endDate || new Date());
 
   useEffect(() => {
-    function formatDuration() {
-      if (event && event.status === "ativo" && isOverllaping) {
-        const duration = intervalToDuration({
-          start: new Date(),
-          end: event.startDate,
-        });
+    function eventIsStartedOrFinalized() {
+      const now = new Date();
 
-        const days = String(duration.days).padStart(2, "0") || 0;
-        const hours = String(duration.hours).padStart(2, "0") || 0;
-        const minutes = String(duration.minutes).padStart(2, "0") || 0;
-        const seconds = String(duration.seconds).padStart(2, "0") || 0;
+      if (event) {
+        const duration = differenceInMilliseconds(event.startDate, now);
 
-        setTimeUntilEventStart(`${days}:${hours}:${minutes}:${seconds}`);
+        const days = formatTowDigits(
+          Math.floor(duration / (1000 * 60 * 60 * 24)),
+        );
+        const hours = formatTowDigits(
+          Math.floor((duration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        );
+        const minutes = formatTowDigits(
+          Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60)),
+        );
+        const seconds = formatTowDigits(
+          Math.floor((duration % (1000 * 60)) / 1000),
+        );
+
+        const countdown = `${days}:${hours}:${minutes}:${seconds}`;
+
+        return {
+          countdownEnded:
+            isToday(event.startDate) ||
+            isPast(event.startDate) ||
+            event.status === "cancelado",
+          message:
+            event.status === "cancelado"
+              ? "00:00:00:00"
+              : isPast(event.endDate)
+                ? "Evento finalizado"
+                : isBefore(event.startDate, now)
+                  ? "Evento iniciado"
+                  : countdown,
+        };
       }
     }
-    const interval = setInterval(formatDuration, 1000);
-    return () => clearInterval(interval);
-  }, [event, isOverllaping]);
+
+    const timer = setInterval(() => {
+      if (event) {
+        const countdawn = eventIsStartedOrFinalized();
+        if (countdawn?.countdownEnded) {
+          setTimeUntilEventStart(countdawn.message);
+          clearInterval(timer);
+          return;
+        }
+
+        setTimeUntilEventStart(countdawn?.message);
+      }
+    });
+
+    return () => clearInterval(timer);
+  }, [event]);
 
   if (!event) return;
 
@@ -112,7 +141,7 @@ export default function Event() {
                 event.status === "cancelado" && "bg-red-950 text-red-500",
               )}
             >
-              {!isOverllaping && event.status !== "cancelado"
+              {isEventExpired && event.status !== "cancelado"
                 ? "Evento concluido"
                 : event.status}
             </span>
@@ -128,7 +157,7 @@ export default function Event() {
             <Dialog>
               <DialogTrigger asChild>
                 <Button
-                  disabled={!isOverllaping || event.status === "cancelado"}
+                  disabled={isEventExpired || event.status === "cancelado"}
                   className="w-full"
                 >
                   Cancelar evento
@@ -152,9 +181,7 @@ export default function Event() {
             <div className="text-zinc-500 w-full flex items-center justify-between">
               <span className="inline-block">Inicia em:</span>
               <span className="font-bold text-zinc-100">
-                {event.status === "cancelado" || !isOverllaping
-                  ? "00:00:00:00"
-                  : timeUntilEventStart}
+                {timeUntilEventStart}
               </span>
             </div>
           </div>

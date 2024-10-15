@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { areIntervalsOverlapping, format } from "date-fns";
+import { areIntervalsOverlapping, format, isPast } from "date-fns";
 import { Ban, Hand, Pencil, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -101,7 +101,7 @@ export function EventRow({ data }: EventRowProps) {
           <span
             className={cn(
               "font-semibold text-xs rounded-full bg-orange-500 px-2 py-0.5",
-              !isEventExpired() && "bg-emerald-500 text-emerald-900",
+              isPast(data.endDate) && "bg-emerald-500 text-emerald-900",
               (data.status === "cancelado" ||
                 data.availableSlots === data.occupiedVacancies) &&
                 "bg-red-400 text-red-50",
@@ -109,7 +109,7 @@ export function EventRow({ data }: EventRowProps) {
           >
             {data.status === "cancelado"
               ? "Evento cancelado"
-              : !isEventExpired()
+              : isPast(data.endDate)
                 ? "Evento Concluido"
                 : data.availableSlots === data.occupiedVacancies
                   ? "Vagas esgotadas"
@@ -146,7 +146,7 @@ export function EventRow({ data }: EventRowProps) {
           <Button
             variant="danger"
             onClick={handleUnsubscribe}
-            disabled={data.status === "cancelado" || !isEventExpired()}
+            disabled={data.status === "cancelado" || isPast(data.endDate)}
           >
             <Ban className="size-4" />
             Cancelar participacao
@@ -155,7 +155,11 @@ export function EventRow({ data }: EventRowProps) {
           <Button
             variant="success"
             onClick={handleSubscribe}
-            disabled={data.status === "cancelado" || !isEventExpired()}
+            disabled={
+              data.status === "cancelado" ||
+              !isEventExpired() ||
+              !(data.availableSlots - data.occupiedVacancies)
+            }
           >
             <Hand className="size-4" />
             Participar do evento
