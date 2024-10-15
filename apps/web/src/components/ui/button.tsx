@@ -14,6 +14,8 @@ const buttonVariants = cva(
         tertiary: "hover:bg-zinc-800 text-zinc-100",
         ghost:
           "bg-zinc-800 text-orange-400 border border-zinc-700/25 hover:text-zinc-100",
+        danger: "bg-red-400 text-red-50 hover:bg-red-500",
+        success: "bg-emerald-400 text-emerald-950 hover:bg-emerald-500",
       },
       size: {
         default: "px-5 py-3",

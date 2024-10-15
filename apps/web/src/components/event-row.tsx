@@ -1,14 +1,15 @@
 "use client";
 
-import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { Hand, Pencil, Trash } from "lucide-react";
+import { areIntervalsOverlapping, format } from "date-fns";
+import { Ban, Hand, Pencil, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import Link from "next/link";
+
+import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface EventRowProps {
   data: {
@@ -16,10 +17,12 @@ interface EventRowProps {
     title: string;
     location: string;
     startDate: Date;
+    endDate: Date;
     availableSlots: number;
     occupiedVacancies: number;
     status: string;
     description: string;
+    participants: string[];
     organizer: {
       id: string;
       name: string;
@@ -30,6 +33,14 @@ interface EventRowProps {
 export function EventRow({ data }: EventRowProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+
+  function isEventExpired() {
+    const isOverllaping = areIntervalsOverlapping(
+      { start: data.startDate, end: data.endDate },
+      { start: data.endDate, end: new Date() },
+    );
+    return isOverllaping;
+  }
 
   async function handleSubscribe() {
     try {
@@ -90,16 +101,19 @@ export function EventRow({ data }: EventRowProps) {
           <span
             className={cn(
               "font-semibold text-xs rounded-full bg-orange-500 px-2 py-0.5",
+              !isEventExpired() && "bg-emerald-500 text-emerald-900",
               (data.status === "cancelado" ||
                 data.availableSlots === data.occupiedVacancies) &&
-                "bg-red-400",
+                "bg-red-400 text-red-50",
             )}
           >
             {data.status === "cancelado"
               ? "Evento cancelado"
-              : data.availableSlots === data.occupiedVacancies
-                ? "Vagas esgotadas"
-                : `Vagas disponiveis ${data.availableSlots - data.occupiedVacancies}`}
+              : !isEventExpired()
+                ? "Evento Concluido"
+                : data.availableSlots === data.occupiedVacancies
+                  ? "Vagas esgotadas"
+                  : `Vagas disponiveis ${data.availableSlots - data.occupiedVacancies}`}
           </span>
         </div>
         <div>
@@ -128,10 +142,25 @@ export function EventRow({ data }: EventRowProps) {
         <Button variant="tertiary" size="icon" type="button">
           <Pencil className="size-4 shrink-0" />
         </Button>
-        <Button className="bg-emerald-500 text-emerald-950">
-          <Hand className="size-4" />
-          Participar do evento
-        </Button>
+        {data.participants.includes(session?.user.id) ? (
+          <Button
+            variant="danger"
+            onClick={handleUnsubscribe}
+            disabled={data.status === "cancelado" || !isEventExpired()}
+          >
+            <Ban className="size-4" />
+            Cancelar participacao
+          </Button>
+        ) : (
+          <Button
+            variant="success"
+            onClick={handleSubscribe}
+            disabled={data.status === "cancelado" || !isEventExpired()}
+          >
+            <Hand className="size-4" />
+            Participar do evento
+          </Button>
+        )}
       </div>
     </Link>
   );

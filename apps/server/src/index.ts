@@ -16,13 +16,13 @@ import cors from "@fastify/cors";
 
 import { db } from "./db";
 import { events, registration, users } from "./db/schema";
-import { Observer } from "./lib/observer";
+import { EventEmitter } from "./lib/event-emiter";
 import { makeLoginController } from "./main/factories/controller/login";
 import { adaptFastifyRoute } from "./main/adapter/fastify-route-adapter";
 import { env } from "./config/env";
 
 const app = Fastify().withTypeProvider<ZodTypeProvider>();
-const observer = new Observer();
+const eventEmitter = EventEmitter();
 
 app.register(cors, {
   origin: "*",
@@ -312,6 +312,24 @@ app.patch(
       })
       .returning();
 
+    const [user] = await db
+      .select({
+        id: registration.id,
+        name: users.name,
+        email: users.email,
+        registrationDate: registration.registrationDate,
+      })
+      .from(registration)
+      .where(
+        and(eq(registration.eventId, eventId), eq(registration.userId, userId)),
+      )
+      .leftJoin(users, eq(users.id, userId));
+
+    eventEmitter.emit(eventId, {
+      key: "user_registration",
+      message: user,
+    });
+
     return reply.send({ registration: data });
   },
 );
@@ -351,6 +369,7 @@ app.get("/events", async (req, reply) => {
       .from(registration)
       .groupBy(registration.eventId),
   );
+
   const result = await db
     .with(eventAvailableSlotsCount)
     .select({
@@ -371,6 +390,11 @@ app.get("/events", async (req, reply) => {
         id: users.id,
         name: users.name,
       },
+      participants: sql<
+        string[]
+      >`COALESCE(array_remove(array_agg(${registration.userId}), NULL), ARRAY[]::text[])`.as(
+        "participants",
+      ),
       createdAt: events.createdAt,
     })
     .from(events)
@@ -378,7 +402,9 @@ app.get("/events", async (req, reply) => {
       eventAvailableSlotsCount,
       eq(eventAvailableSlotsCount.eventId, events.id),
     )
-    .leftJoin(users, eq(users.id, events.organizerId));
+    .leftJoin(users, eq(users.id, events.organizerId))
+    .leftJoin(registration, eq(registration.eventId, events.id))
+    .groupBy(events.id, users.id, eventAvailableSlotsCount.slotsCount);
 
   return reply.send(result);
 });
@@ -460,17 +486,17 @@ app.get(
 
 app.register(async (fastify) => {
   fastify.get(
-    "/notify",
+    "/notify/:eventId",
     { websocket: true },
     async function wsHandler(socket, req) {
       const { eventId } = req.params as { eventId: string };
 
-      observer.subscribe(socket, eventId);
+      eventEmitter.on(eventId, socket);
 
       socket.onmessage = () => {};
 
       socket.onclose = () => {
-        observer.unsubscribe(socket, eventId);
+        eventEmitter.off(eventId, socket);
       };
     },
   );
