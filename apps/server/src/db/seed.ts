@@ -74,7 +74,7 @@ const seed = async () => {
         title: "Art Workshop",
         description: "Explore your creativity in this fun art workshop.",
         location: "Art Studio B",
-        availableSlots: 5,
+        availableSlots: 0,
         eventType: "presencial",
         status: "ativo",
         startDate: new Date("2024-10-22T14:00:00Z"),

@@ -2,20 +2,13 @@
 
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverPortal,
-  PopoverTrigger,
-} from "@radix-ui/react-popover";
-import * as Separator from "@radix-ui/react-separator";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
 import { format } from "date-fns";
-import { Edit, Ellipsis, Hand, Pencil, Trash } from "lucide-react";
+import { Hand, Pencil, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 interface EventRowProps {
   data: {
@@ -85,8 +78,12 @@ export function EventRow({ data }: EventRowProps) {
   }
 
   const parseDate = format(data.startDate, "dd 'de' MMMM yyyy");
+
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex gap-3 items-center justify-between">
+    <Link
+      href={`/event/${data.id}`}
+      className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex gap-3 items-center justify-between ring-2 ring-transparent ring-offset-2 ring-offset-zinc-950 hover:ring-orange-500"
+    >
       <div>
         <div className="flex items-center gap-2 mb-4">
           <span className="font-semibold">{data.title}</span>
@@ -136,6 +133,6 @@ export function EventRow({ data }: EventRowProps) {
           Participar do evento
         </Button>
       </div>
-    </div>
+    </Link>
   );
 }

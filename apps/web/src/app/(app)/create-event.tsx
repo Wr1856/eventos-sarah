@@ -17,6 +17,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
@@ -101,7 +102,9 @@ export function CreateEventDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <Title className="mb-11">Informações do Evento</Title>
+        <DialogTitle asChild>
+          <Title className="mb-11">Informações do Evento</Title>
+        </DialogTitle>
         <form
           onSubmit={handleSubmit(createEvent)}
           className="w-full grid grid-cols-2 gap-4"
@@ -170,7 +173,7 @@ export function CreateEventDialog() {
             <Controller
               {...register("date")}
               control={control}
-              render={({ field: { onChange, value } }) => (
+              render={({ field: { onChange, value, ref } }) => (
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
@@ -216,7 +219,7 @@ export function CreateEventDialog() {
           </div>
 
           <div className="col-span-2 flex flex-1 items-center justify-end gap-2">
-            <DialogClose>
+            <DialogClose asChild>
               <Button variant="secondary" type="submit">
                 Voltar
               </Button>

@@ -5,6 +5,7 @@ import React, { type ComponentProps, type ElementRef, forwardRef } from "react";
 export const Dialog = PrimitiveDialog.Dialog;
 export const DialogTrigger = PrimitiveDialog.DialogTrigger;
 export const DialogClose = PrimitiveDialog.DialogClose;
+export const DialogTitle = PrimitiveDialog.DialogTitle;
 
 export const DialogOverlay = forwardRef<
   ElementRef<typeof PrimitiveDialog.DialogOverlay>,

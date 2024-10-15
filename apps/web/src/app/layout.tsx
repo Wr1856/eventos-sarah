@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${onest.className} bg-zinc-950 text-zinc-100 antialiased`}
+        className={`${onest.className} bg-zinc-950 text-zinc-100 selection:bg-orange-500 selection:text-white antialiased`}
       >
         <Providers>
           <Toaster richColors />

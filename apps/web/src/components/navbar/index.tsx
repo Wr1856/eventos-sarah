@@ -11,7 +11,7 @@ export function Navbar() {
     await signOut({ redirectTo: "/auth/sign-in" });
   }
   return (
-    <div className="z-50 w-fit fixed left-1/2 -translate-x-1/2 bottom-8 rounded-full p-2 border border-zinc-900 flex items-center justify-center gap-2">
+    <div className="z-50 w-fit bg-zinc-950/55 backdrop-blur-md fixed left-1/2 -translate-x-1/2 bottom-8 rounded-full p-2 border border-zinc-900 flex items-center justify-center gap-2">
       <Button
         size="icon"
         variant="tertiary"

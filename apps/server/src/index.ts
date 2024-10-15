@@ -371,6 +371,7 @@ app.get("/events", async (req, reply) => {
         id: users.id,
         name: users.name,
       },
+      createdAt: events.createdAt,
     })
     .from(events)
     .leftJoin(
@@ -381,6 +382,54 @@ app.get("/events", async (req, reply) => {
 
   return reply.send(result);
 });
+
+app.get(
+  "/event/:eventId",
+  { schema: { params: z.object({ eventId: z.string().cuid2() }) } },
+  async (req, reply) => {
+    const { eventId } = req.params;
+    const eventAvailableSlotsCount = db.$with("event_available_slots_count").as(
+      db
+        .select({
+          eventId: registration.eventId,
+          slotsCount: sql`COUNT(${registration.id})`.as("slotsCount"),
+        })
+        .from(registration)
+        .groupBy(registration.eventId),
+    );
+    const [result] = await db
+      .with(eventAvailableSlotsCount)
+      .select({
+        id: events.id,
+        title: events.title,
+        description: events.description,
+        location: events.location,
+        availableSlots: events.availableSlots,
+        occupiedVacancies:
+          sql`COALESCE(${eventAvailableSlotsCount.slotsCount}, 0)`.mapWith(
+            Number,
+          ),
+        eventType: events.eventType,
+        status: events.status,
+        startDate: events.startDate,
+        endDate: events.endDate,
+        organizer: {
+          id: users.id,
+          name: users.name,
+        },
+        createdAt: events.createdAt,
+      })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .leftJoin(
+        eventAvailableSlotsCount,
+        eq(eventAvailableSlotsCount.eventId, events.id),
+      )
+      .leftJoin(users, eq(users.id, events.organizerId));
+
+    return reply.send(result);
+  },
+);
 
 app.get(
   "/event/:eventId/participants",

@@ -3,10 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { Title } from "@/components/ui/title";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { formatDistance } from "date-fns";
-import { Clock4, Timer, User, Users2 } from "lucide-react";
+import {
+  areIntervalsOverlapping,
+  formatDistance,
+  intervalToDuration,
+} from "date-fns";
+import { Clock4, User, Users2 } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Participant {
   id: string;
@@ -15,8 +21,29 @@ interface Participant {
   registrationDate: string;
 }
 
+export interface EventType {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  availableSlots: number;
+  occupiedVacancies: number;
+  eventType: string;
+  status: string;
+  startDate: Date;
+  endDate: Date;
+  organizer: {
+    id: string;
+    name: string;
+  };
+  createdAt: Date;
+}
+
 export default function Event() {
   const { id } = useParams<{ id: string }>();
+  const [timeUntilEventStart, setTimeUntilEventStart] = useState<string | null>(
+    null,
+  );
 
   const { data: participants } = useQuery<Participant[]>({
     queryKey: ["participants", id],
@@ -26,47 +53,112 @@ export default function Event() {
     },
   });
 
+  const { data: event } = useQuery<EventType>({
+    queryKey: ["event", id],
+    queryFn: async () => {
+      const response = await api.get(`/event/${id}`);
+      return response.data;
+    },
+  });
+
+  function isEventExpired() {
+    if (event) {
+      const isOverllaping = areIntervalsOverlapping(
+        { start: event.startDate, end: event.endDate },
+        { start: event.endDate, end: new Date() },
+      );
+      return isOverllaping;
+    }
+  }
+
+  const isOverllaping = isEventExpired();
+
+  useEffect(() => {
+    function formatDuration() {
+      if (event && event.status === "ativo" && isOverllaping) {
+        const duration = intervalToDuration({
+          start: new Date(),
+          end: event.startDate,
+        });
+
+        const days = String(duration.days).padStart(2, "0") || 0;
+        const hours = String(duration.hours).padStart(2, "0") || 0;
+        const minutes = String(duration.minutes).padStart(2, "0") || 0;
+        const seconds = String(duration.seconds).padStart(2, "0") || 0;
+
+        setTimeUntilEventStart(`${days}:${hours}:${minutes}:${seconds}`);
+      }
+    }
+    const interval = setInterval(formatDuration, 1000);
+    return () => clearInterval(interval);
+  }, [event, isOverllaping]);
+
+  if (!event) return;
+
   return (
-    <div className="grid grid-cols-event gap-10 px-28">
+    <div className="grid grid-cols-event gap-10 px-28 mt-11">
       <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-8">
         <div className="flex items-start justify-between pb-6 border-b border-b-zinc-800 mb-3">
           <div className="space-y-3">
-            <span className="inline-block px-3 py-2 rounded-full bg-emerald-400 text-emerald-800 font-bold text-xs uppercase">
-              Ativo
+            <span
+              className={cn(
+                "inline-block px-3 py-2 rounded-full bg-emerald-400 text-emerald-800 font-bold text-xs uppercase",
+                event.status === "cancelado" && "bg-red-950 text-red-500",
+              )}
+            >
+              {!isOverllaping && event.status !== "cancelado"
+                ? "Evento concluido"
+                : event.status}
             </span>
-            <Title className="text-3xl">Yoga Class</Title>
+            <Title className="text-3xl">{event.title}</Title>
             <span className="text-sm text-zinc-500 block">
-              Criado ha 5 horas
+              Criado{" "}
+              {formatDistance(event.createdAt, new Date(), {
+                addSuffix: true,
+              })}
             </span>
           </div>
-          <div className="space-y-3">
-            <Button>Cancelar evento</Button>
-            <span className="text-zinc-500 inline-block">
-              Encerra em: <b className="font-bold text-zinc-100">01:12:26:64</b>
-            </span>
+          <div className="space-y-3 w-48 flex flex-col items-end">
+            <Button
+              disabled={!isOverllaping || event.status === "cancelado"}
+              className="w-full"
+            >
+              Cancelar evento
+            </Button>
+            <div className="text-zinc-500 w-full flex items-center justify-between">
+              <span className="inline-block">Inicia em:</span>
+              <span className="font-bold text-zinc-100">
+                {event.status === "cancelado" || !isOverllaping
+                  ? "00:00:00:00"
+                  : timeUntilEventStart}
+              </span>
+            </div>
           </div>
         </div>
 
-        <p className="py-6">
-          Olá! Estamos em busca de um desenvolvedor talentoso para colaborar no
-          desenvolvimento de uma landing page dedicada a promover os serviços do
-          nosso Pet Shop. Somos uma empresa apaixonada por cuidar dos animais,
-          oferecendo serviços de banho e tosa, consultas veterinárias, e uma
-          loja completa com produtos de qualidade para pets. Sobre o projeto:
-          Escopo: A landing page terá 10 seções, cobrindo desde a apresentação
-          da empresa até os serviços oferecidos e uma área para agendamento
-          online. Design: O design completo já está pronto e finalizado no
-          Figma, garantindo uma base sólida para o desenvolvimento. Objetivo:
-          Criar uma página rápida e responsiva que ajude a converter visitantes
-          em clientes, destacando a confiança e carinho que temos pelos pets. O
-          que estamos buscando: Um desenvolvedor competente e comprometido, com
-          experiência em HTML, CSS, JavaScript e preferencialmente em React, que
-          consiga transformar o design em uma landing page otimizada e
-          funcional. Alguém que tenha um olhar crítico para detalhes e que possa
-          colaborar para garantir a melhor performance e usabilidade. Estamos
-          animados para trabalhar com alguém que compartilhe nossa paixão por
-          criar experiências de qualidade!
+        <p className="text-zinc-300 text-base leading-relaxed py-4">
+          {event.description}
         </p>
+
+        <span>Informacoes:</span>
+        <ol className="list-disc pl-10 py-3">
+          <li>
+            <b>Local:</b> {event.location}
+          </li>
+          <li>
+            <b>Total de vagas:</b> {event.availableSlots}
+            {" - "}
+            <span className="text-red-600">
+              {" "}
+              {event.occupiedVacancies} ocupadas
+            </span>
+          </li>
+          <li>
+            <b>Tipo de Evento:</b>{" "}
+            <span className="capitalize">{event.eventType}</span>
+          </li>
+        </ol>
+
         <div className="flex flex-col gap-4 border-t border-t-zinc-800 pt-6">
           <span className="font-bold text-xs uppercase text-zinc-500">
             Criado por
@@ -75,7 +167,7 @@ export default function Event() {
             <div className="size-10 flex items-center justify-center rounded-full bg-zinc-500 text-zinc-800">
               <User className="size-5" />
             </div>
-            <span>John Doe</span>
+            <span>{event.organizer.name}</span>
           </div>
         </div>
       </div>
@@ -116,6 +208,9 @@ export default function Event() {
               </div>
             </div>
           ))}
+          <Button variant="ghost" className="w-full uppercase text-xs">
+            Carregar mais
+          </Button>
         </div>
       </div>
     </div>
