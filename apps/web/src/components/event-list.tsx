@@ -1,5 +1,3 @@
-"use client";
-
 import { useQuery } from "@tanstack/react-query";
 import { setDefaultOptions } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -22,21 +20,15 @@ export interface Event {
   status: string;
   startDate: Date;
   endDate: Date;
+  participants: string[];
   organizer: {
     id: string;
     name: string;
   };
 }
 
-export function EventList() {
-  const { data } = useQuery({
-    queryKey: ["events"],
-    queryFn: async () => {
-      const response = await api.get<Events>("/events");
-      return response.data;
-    },
-  });
-
+export async function EventList() {
+  const { data } = await api.get<Events>("/events");
   if (!data) return;
 
   return (

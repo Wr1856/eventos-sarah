@@ -21,6 +21,7 @@ import { makeLoginController } from "./main/factories/controller/login";
 import { adaptFastifyRoute } from "./main/adapter/fastify-route-adapter";
 import { env } from "./config/env";
 import { getUserPermission } from "./utils/get-user-permission";
+import { eventSchema } from "@next-acl/auth";
 
 const app = Fastify().withTypeProvider<ZodTypeProvider>();
 const eventEmitter = EventEmitter();
@@ -142,9 +143,9 @@ app.post(
       .from(users)
       .where(eq(users.id, organizerId));
 
-    const { can } = getUserPermission(user.id, user.role);
+    const { cannot } = getUserPermission(user.id, user.role);
 
-    if (!can("create", "Event")) {
+    if (cannot("create", "Event")) {
       throw new Error("You're not allowed");
     }
 
@@ -200,6 +201,24 @@ app.put(
       organizerId,
     } = req.body;
     const { eventId } = req.params;
+    const [eventData] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, organizerId));
+
+    const { cannot } = getUserPermission(user.id, user.role);
+
+    if (
+      cannot("update", eventSchema.parse({ userId: eventData.organizerId }))
+    ) {
+      throw new Error("You're not allowed");
+    }
+
     const [event] = await db
       .update(events)
       .set({
@@ -235,19 +254,28 @@ app.patch(
   async (req, reply) => {
     const { eventId } = req.params;
     const { userId } = req.body;
+
+    const [eventData] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+    const { cannot } = getUserPermission(user.id, user.role);
+
+    if (
+      cannot("update", eventSchema.parse({ userId: eventData.organizerId }))
+    ) {
+      throw new Error("This event are not your!");
+    }
+
     const [event] = await db
       .update(events)
       .set({
         status: "cancelado",
       })
-      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
-      .returning();
-
-    console.log(event);
-
-    if (!event) {
-      return reply.status(400).send({ message: "this event are not your!" });
-    }
+      .where(and(eq(events.id, eventId), eq(events.organizerId, userId)));
 
     return reply.send({ event });
   },
@@ -265,14 +293,26 @@ app.delete(
   },
   async (req, reply) => {
     const { eventId, userId } = req.params;
+
+    const [eventData] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+    const { cannot } = getUserPermission(user.id, user.role);
+
+    if (
+      cannot("delete", eventSchema.parse({ userId: eventData.organizerId }))
+    ) {
+      throw new Error("This event are not your!");
+    }
+
     const [event] = await db
       .delete(events)
       .where(and(eq(events.id, eventId), eq(events.organizerId, userId)))
       .returning();
-
-    if (!event) {
-      return reply.status(400).send({ message: "this event are not your!" });
-    }
 
     return reply.send({ event });
   },
@@ -293,6 +333,22 @@ app.patch(
   async (req, reply) => {
     const { userId } = req.body;
     const { eventId } = req.params;
+
+    const [eventData] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+
+    const [userData] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
+
+    const { cannot } = getUserPermission(userData.id, userData.role);
+
+    if (cannot("subscribe", "Event")) {
+      throw new Error("You are not allowed to subscribe in event");
+    }
 
     const eventAvailableSlotsCount = db.$with("event_available_slots_count").as(
       db
@@ -385,6 +441,22 @@ app.patch(
   async (req, reply) => {
     const { userId } = req.body;
     const { eventId } = req.params;
+
+    const [eventData] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+
+    const [userData] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
+
+    const { cannot } = getUserPermission(userData.id, userData.role);
+
+    if (cannot("subscribe", "Event")) {
+      throw new Error("You are not allowed to subscribe in event");
+    }
 
     await db
       .delete(registration)

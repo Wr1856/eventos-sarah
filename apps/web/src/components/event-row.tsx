@@ -1,17 +1,13 @@
-"use client";
-
-import { useQueryClient } from "@tanstack/react-query";
 import { areIntervalsOverlapping, format, isPast } from "date-fns";
-import { Ban, Hand, Pencil, Trash } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { toast } from "sonner";
+import { Pencil, Trash } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 
-import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { ability } from "@/auth";
+import { ActionsEvent } from "./actions-event";
 
-interface EventRowProps {
+export interface EventRowProps {
   data: {
     id: string;
     title: string;
@@ -30,63 +26,18 @@ interface EventRowProps {
   };
 }
 
-export function EventRow({ data }: EventRowProps) {
-  const { data: session } = useSession();
-  const queryClient = useQueryClient();
+export async function EventRow({ data }: EventRowProps) {
+  const permission = await ability();
 
-  function isEventExpired() {
-    const isOverllaping = areIntervalsOverlapping(
-      { start: data.startDate, end: data.endDate },
-      { start: data.endDate, end: new Date() },
-    );
-    return isOverllaping;
-  }
-
-  async function handleSubscribe() {
-    try {
-      await api.patch(`/event/${data.id}/subscribe`, {
-        userId: session?.user.id,
-      });
-      toast.success("Inscrição confirmada com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch (error) {
-      toast.error(error.response.data.error || error.response.data.message);
-    }
-  }
-
-  async function handleUnsubscribe() {
-    try {
-      await api.patch(`/event/${data.id}/unsubscribe`, {
-        userId: session?.user.id,
-      });
-      toast.success("Voce cancelou sua inscrição!");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch (error) {
-      toast.error(error.response.data.error);
-    }
-  }
-
-  async function handleCancelEvent() {
-    try {
-      await api.patch(`/event/${data.id}/cancel`, {
-        userId: session?.user.id,
-      });
-      toast.info("Voce cancelou o evento!");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch {
-      toast.error("Voce nao pode cancelar um evento que nao e seu");
-    }
-  }
-
-  async function handleDeleteEvent() {
-    try {
-      await api.delete(`/event/${data.id}/${session?.user.id}`);
-      toast.info("Voce excluiu o evento!");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch {
-      toast.error("Voce nao pode excluir um evento que nao foi voce que criou");
-    }
-  }
+  // async function handleDeleteEvent() {
+  //   try {
+  //     await api.delete(`/event/${data.id}/${session?.user.id}`);
+  //     toast.info("Voce excluiu o evento!");
+  //     queryClient.invalidateQueries({ queryKey: ["events"] });
+  //   } catch {
+  //     toast.error("Voce nao pode excluir um evento que nao foi voce que criou");
+  //   }
+  // }
 
   const parseDate = format(data.startDate, "dd 'de' MMMM yyyy");
 
@@ -135,36 +86,19 @@ export function EventRow({ data }: EventRowProps) {
 
         <div className="w-px h-10 bg-zinc-800 shrink-0" />
 
-        <Button variant="tertiary" size="icon" type="button">
-          <Trash className="size-4 shrink-0" />
-        </Button>
+        {permission?.can("manage", "Event") && (
+          <>
+            <Button variant="tertiary" size="icon" type="button">
+              <Trash className="size-4 shrink-0" />
+            </Button>
 
-        <Button variant="tertiary" size="icon" type="button">
-          <Pencil className="size-4 shrink-0" />
-        </Button>
-        {data.participants.includes(session?.user.id) ? (
-          <Button
-            variant="danger"
-            onClick={handleUnsubscribe}
-            disabled={data.status === "cancelado" || isPast(data.endDate)}
-          >
-            <Ban className="size-4" />
-            Cancelar participacao
-          </Button>
-        ) : (
-          <Button
-            variant="success"
-            onClick={handleSubscribe}
-            disabled={
-              data.status === "cancelado" ||
-              !isEventExpired() ||
-              !(data.availableSlots - data.occupiedVacancies)
-            }
-          >
-            <Hand className="size-4" />
-            Participar do evento
-          </Button>
+            <Button variant="tertiary" size="icon" type="button">
+              <Pencil className="size-4 shrink-0" />
+            </Button>
+          </>
         )}
+
+        <ActionsEvent data={data} />
       </div>
     </Link>
   );

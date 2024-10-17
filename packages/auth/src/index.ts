@@ -10,6 +10,10 @@ import {
 import { permissions } from "./permission";
 import type { User } from "./models/user";
 
+export * from "./models/event";
+export * from "./models/user";
+export * from "./roles";
+
 const appAbilitiesSchema = z.union([
   eventSubject,
   participantsSubject,

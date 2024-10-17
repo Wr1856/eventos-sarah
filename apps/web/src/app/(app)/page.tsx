@@ -11,7 +11,7 @@ export default async function Home() {
     <div className="px-32 mt-9">
       <div className="flex items-center justify-between">
         <Title>Eventos</Title>
-        {permissions?.can("manage", "all") && <CreateEventDialog />}
+        {permissions?.can("create", "Event") && <CreateEventDialog />}
       </div>
 
       <EventList />

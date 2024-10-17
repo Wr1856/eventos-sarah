@@ -1,6 +1,6 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 import Image from "next/image";
@@ -34,6 +34,7 @@ const userSchema = z.object({
 type CreateUser = z.infer<typeof userSchema>;
 
 export default function SignUp() {
+  const route = useRouter();
   const {
     control,
     handleSubmit,
@@ -58,7 +59,7 @@ export default function SignUp() {
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    redirect("/auth/sign-in");
+    route.push("/auth/sign-in");
   }
   return (
     <div className="w-full h-screen p-5 grid grid-cols-2 gap-10 auto-rows-auto place-items-center">
