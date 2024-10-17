@@ -5,7 +5,7 @@ export const eventTypeName = z.literal("Event");
 
 export const eventSubject = z.tuple([
   z.union([
-    z.literal("manager"),
+    z.literal("manage"),
     z.literal("get"),
     z.literal("create"),
     z.literal("update"),

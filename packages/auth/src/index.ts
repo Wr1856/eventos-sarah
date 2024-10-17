@@ -10,26 +10,26 @@ import {
 import { permissions } from "./permission";
 import type { User } from "./models/user";
 
-const appAbilities = z.union([
+const appAbilitiesSchema = z.union([
   eventSubject,
   participantsSubject,
 
-  z.tuple([z.literal("manager"), z.literal("all")]),
+  z.tuple([z.literal("manage"), z.literal("all")]),
 ]);
 
-type AppAbilities = z.infer<typeof appAbilities>;
+type AppAbilities = z.infer<typeof appAbilitiesSchema>;
 
 export type AppAbility = MongoAbility<AppAbilities>;
 export const createAppAbility = createMongoAbility as CreateAbility<AppAbility>;
 
-export function defineAbilityFor(user: User): AppAbility {
+export function defineAbilityFor(user: User) {
   const builder = new AbilityBuilder(createAppAbility);
 
-  if (typeof permissions[user.role] === "function") {
-    permissions[user.role](user, builder);
-  } else {
-    throw new Error(`Trying to use unknown role ${user.role}`);
+  if (typeof permissions[user.role] !== "function") {
+    throw new Error(`Permissions for role ${user.role} not found.`);
   }
+
+  permissions[user.role](user, builder);
 
   const ability = builder.build({
     detectSubjectType(subject) {

@@ -87,12 +87,6 @@ export function CreateEventDialog() {
     }
   }
 
-  // if (!session?.user) {
-  //   return <span>Carregando...</span>;
-  // }
-
-  if (session?.user.role !== "organizador") return;
-
   return (
     <Dialog>
       <DialogTrigger asChild>

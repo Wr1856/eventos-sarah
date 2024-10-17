@@ -20,7 +20,7 @@ import { EventEmitter } from "./lib/event-emiter";
 import { makeLoginController } from "./main/factories/controller/login";
 import { adaptFastifyRoute } from "./main/adapter/fastify-route-adapter";
 import { env } from "./config/env";
-import { getUserPergmission } from "./utils/get-user-permission";
+import { getUserPermission } from "./utils/get-user-permission";
 
 const app = Fastify().withTypeProvider<ZodTypeProvider>();
 const eventEmitter = EventEmitter();
@@ -43,6 +43,29 @@ app.post(
     },
   },
   adaptFastifyRoute(makeLoginController()),
+);
+
+app.get(
+  "/user/:userId",
+  {
+    schema: {
+      params: z.object({
+        userId: z.string().cuid2(),
+      }),
+    },
+  },
+  async (req, res) => {
+    const { userId } = req.params;
+    const [user] = await db
+      .select({ id: users.id, role: users.role })
+      .from(users)
+      .where(eq(users.id, userId));
+
+    return {
+      userId: user.id,
+      role: user.role,
+    };
+  },
 );
 
 app.post(
@@ -119,9 +142,9 @@ app.post(
       .from(users)
       .where(eq(users.id, organizerId));
 
-    const { cannot } = getUserPergmission(user.id, user.role);
+    const { can } = getUserPermission(user.id, user.role);
 
-    if (cannot("create", "Event")) {
+    if (!can("create", "Event")) {
       throw new Error("You're not allowed");
     }
 

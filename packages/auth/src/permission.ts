@@ -1,18 +1,19 @@
 import type { AbilityBuilder } from "@casl/ability";
+
 import type { Role } from "./roles";
-import type { AppAbility } from "./abilitites";
+import type { AppAbility } from ".";
 import type { User } from "./models/user";
 
-type UserPermissions = (
+type PermissionsByRole = (
   user: User,
   builder: AbilityBuilder<AppAbility>,
 ) => void;
 
-export const permissions: Record<Role, UserPermissions> = {
+export const permissions: Record<Role, PermissionsByRole> = {
   organizador(user, { can, cannot }) {
-    can("manager", "all");
-    cannot("delete", "Event");
-    can("delete", "Event", { userId: { $eq: user.id } });
+    can("manage", "all");
+    cannot(["delete", "update"], "Event");
+    can(["delete", "update"], "Event", { userId: { $eq: user.id } });
   },
   visualizador(user, { can, cannot }) {
     can("get", "Event");
@@ -20,6 +21,7 @@ export const permissions: Record<Role, UserPermissions> = {
   },
   participante(user, { can, cannot }) {
     can("get", "Participants");
-    can(["subscribe", "unsubscribe", "get"], "Event");
+    can("get", "Event");
+    can(["subscribe", "unsubscribe"], "Event");
   },
 };
