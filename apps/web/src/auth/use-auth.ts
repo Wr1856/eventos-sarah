@@ -1,14 +1,25 @@
 "use client";
 
+import { defineAbilityFor, type AppAbility } from "@next-acl/auth";
 import { useSession } from "next-auth/react";
-import { defineAbilityFor, authUserSchema } from "@next-acl/auth";
+import { useEffect, useState } from "react";
 
 export function usePermission() {
   const session = useSession();
+  const [ability, setAbility] = useState<AppAbility | undefined>();
 
-  const authUser = authUserSchema.parse(session.data?.user);
+  useEffect(() => {
+    const user = session.data?.user;
 
-  const ability = defineAbilityFor(authUser);
+    if (user?.id && user?.role) {
+      const permission = defineAbilityFor({
+        id: user.id,
+        role: user.role,
+      });
+
+      setAbility(permission);
+    }
+  }, [session]);
 
   return ability;
 }

@@ -1,5 +1,7 @@
 import NextAuth, { type Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { setCookie } from "nookies";
+
 import { api } from "./lib/api";
 
 export type { Session, User } from "next-auth";
@@ -30,7 +32,12 @@ export const {
         });
 
         if (response.data.loggedIn) {
-          console.log(response.data);
+          const maxAge = 2 * 24 * 60 * 60;
+          setCookie(null, "user", JSON.stringify(response.data), {
+            maxAge,
+            path: "/",
+            httpOnly: true,
+          });
 
           return {
             id: response.data.id,

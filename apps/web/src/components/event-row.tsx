@@ -1,4 +1,4 @@
-import { areIntervalsOverlapping, format, isPast } from "date-fns";
+import { format, isPast } from "date-fns";
 import { Pencil, Trash } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -75,7 +75,7 @@ export async function EventRow({ data }: EventRowProps) {
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <div className="flex flex-col text-sm gap-y-1">
+        <div className="flex flex-col items-end text-sm gap-y-1">
           <span className="text-zinc-500">
             Local do evento: <b className="text-zinc-100">{data.location}</b>
           </span>
@@ -84,10 +84,9 @@ export async function EventRow({ data }: EventRowProps) {
           </span>
         </div>
 
-        <div className="w-px h-10 bg-zinc-800 shrink-0" />
-
         {permission?.can("manage", "Event") && (
           <>
+            <div className="w-px h-10 bg-zinc-800 shrink-0" />
             <Button variant="tertiary" size="icon" type="button">
               <Trash className="size-4 shrink-0" />
             </Button>
@@ -97,8 +96,7 @@ export async function EventRow({ data }: EventRowProps) {
             </Button>
           </>
         )}
-
-        <ActionsEvent data={data} />
+        {permission?.can("subscribe", "Event") && <ActionsEvent data={data} />}
       </div>
     </Link>
   );

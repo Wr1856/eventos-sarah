@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 import Image from "next/image";
+import Link from "next/link";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { api } from "@/lib/api";
 import background from "@/assets/sun-tornado.svg";
 import logoSarah from "@/assets/logo_sarah.svg";
 import { Label } from "@/components/ui/label";
@@ -18,20 +20,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Link from "next/link";
 import { Title } from "@/components/ui/title";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { TextError } from "@/components/text-error";
+import { createUser } from "./actions";
 
 const userSchema = z.object({
-  name: z.string().min(4),
-  email: z.string().email(),
-  role: z.string(),
-  password: z.string().min(6),
+  name: z
+    .string()
+    .min(4, { message: "O campo do nome nao pode estar em branco." }),
+  email: z
+    .string()
+    .email({ message: "Email invalido, preencha com email valido." }),
+  role: z.string({ required_error: "O tipo da conta nao pode esta vazio." }),
+  password: z
+    .string()
+    .min(6, { message: "A senha deve conter ao menos 6 caracters." }),
 });
 
-type CreateUser = z.infer<typeof userSchema>;
+export type CreateUser = z.infer<typeof userSchema>;
 
 export default function SignUp() {
   const route = useRouter();
@@ -43,16 +49,10 @@ export default function SignUp() {
   } = useForm<CreateUser>({
     resolver: zodResolver(userSchema),
   });
-  async function handleCreateAccount(data: CreateUser) {
-    try {
-      const { name, email, password, role } = data;
 
-      await api.post("/users", {
-        name,
-        email,
-        password,
-        role,
-      });
+  const action: () => void = handleSubmit(async (data) => {
+    try {
+      createUser(data);
       toast.success("Conta criada com sucesso, va para tela de login.");
     } catch {
       toast.error("Ocorreu um erro tente novamente");
@@ -60,7 +60,8 @@ export default function SignUp() {
     }
     await new Promise((resolve) => setTimeout(resolve, 3000));
     route.push("/auth/sign-in");
-  }
+  });
+
   return (
     <div className="w-full h-screen p-5 grid grid-cols-2 gap-10 auto-rows-auto place-items-center">
       <div className="w-full">
@@ -71,7 +72,7 @@ export default function SignUp() {
         />
       </div>
       <form
-        onSubmit={handleSubmit(handleCreateAccount)}
+        action={action}
         className="px-20 w-full flex flex-col gap-y-16 items-center justify-center"
       >
         <div className="w-80 flex flex-col gap-y-2 items-center justify-center">
