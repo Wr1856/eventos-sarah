@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import type { EventRowProps } from "./event-row";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 type ActionsEventProps = EventRowProps;
 
@@ -21,6 +22,7 @@ export function ActionsEvent({ data }: ActionsEventProps) {
       await api.patch(`/event/${data.id}/subscribe`, {
         userId: session?.user.id,
       });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
       toast.success("Inscrição confirmada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error) {

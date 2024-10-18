@@ -1,11 +1,8 @@
 "use client";
 
 import {
-  areIntervalsOverlapping,
   differenceInMilliseconds,
   formatDistance,
-  formatDuration,
-  intervalToDuration,
   isBefore,
   isPast,
   isToday,
@@ -25,6 +22,8 @@ import { Title } from "@/components/ui/title";
 import { api } from "@/lib/api";
 import { cn, formatTowDigits } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { usePermission } from "@/auth/use-auth";
+import { eventSchema } from "@next-acl/auth";
 
 interface Participant {
   id: string;
@@ -53,6 +52,7 @@ export interface EventType {
 
 export default function Event() {
   const { id } = useParams<{ id: string }>();
+  const permission = usePermission();
   const [timeUntilEventStart, setTimeUntilEventStart] = useState<string>();
 
   const { data: participants } = useQuery<Participant[]>({
@@ -152,30 +152,36 @@ export default function Event() {
             </span>
           </div>
           <div className="space-y-3 w-48 flex flex-col items-end">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  disabled={isEventExpired || event.status === "cancelado"}
-                  className="w-full"
-                >
-                  Cancelar evento
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-fit">
-                <Title className="text-center">
-                  Tem certeza que quer cancelar este evento?
-                </Title>
-                <p className="text-zinc-500 text-sm py-4 text-center">
-                  Evento cancelado nao pode ser reativado
-                </p>
-                <div className="flex items-center justify-center pt-10 gap-3">
-                  <DialogClose>
-                    <Button variant="secondary">Voltar</Button>
-                  </DialogClose>
-                  <Button variant="primary">Comfirmar</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {permission?.can(
+              "update",
+              eventSchema.parse({ userId: event?.organizer.id }),
+            ) && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    disabled={isEventExpired || event.status === "cancelado"}
+                    className="w-full"
+                  >
+                    Cancelar evento
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="w-fit">
+                  <Title className="text-center">
+                    Tem certeza que quer cancelar este evento?
+                  </Title>
+                  <p className="text-zinc-500 text-sm py-4 text-center">
+                    Evento cancelado nao pode ser reativado
+                  </p>
+                  <div className="flex items-center justify-center pt-10 gap-3">
+                    <DialogClose>
+                      <Button variant="secondary">Voltar</Button>
+                    </DialogClose>
+                    <Button variant="primary">Comfirmar</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+
             <div className="text-zinc-500 w-full flex items-center justify-between">
               <span className="inline-block">Inicia em:</span>
               <span className="font-bold text-zinc-100">
