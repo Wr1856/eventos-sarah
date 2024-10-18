@@ -10,6 +10,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import type { EventRowProps } from "./event-row";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { handleSubscribe, handleUnsubscribe } from "./actions";
 
 type ActionsEventProps = EventRowProps;
 
@@ -17,24 +18,18 @@ export function ActionsEvent({ data }: ActionsEventProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
-  async function handleSubscribe() {
+  function subscribe() {
     try {
-      await api.patch(`/event/${data.id}/subscribe`, {
-        userId: session?.user.id,
-      });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      toast.success("Inscrição confirmada com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["events"] });
+      handleSubscribe({ id: data.id, userId: session?.user.id });
+      toast.success("Inscricao realizada com sucesso!");
     } catch (error) {
-      toast.error(error.response.data.error || error.response.data.message);
+      toast.error(error.response.data.error);
     }
   }
 
-  async function handleUnsubscribe() {
+  function unsubscribe() {
     try {
-      await api.patch(`/event/${data.id}/unsubscribe`, {
-        userId: session?.user.id,
-      });
+      handleUnsubscribe({ id: data.id, userId: session?.user.id });
       toast.success("Voce cancelou sua inscrição!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error) {
@@ -47,7 +42,7 @@ export function ActionsEvent({ data }: ActionsEventProps) {
   return data.participants.includes(session?.user.id) ? (
     <Button
       variant="danger"
-      onClick={handleUnsubscribe}
+      onClick={unsubscribe}
       disabled={data.status === "cancelado" || isPast(data.endDate)}
     >
       <Ban className="size-4" />
@@ -56,7 +51,7 @@ export function ActionsEvent({ data }: ActionsEventProps) {
   ) : (
     <Button
       variant="success"
-      onClick={handleSubscribe}
+      onClick={subscribe}
       disabled={
         data.status === "cancelado" ||
         isEventExpired ||

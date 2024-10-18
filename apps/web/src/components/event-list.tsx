@@ -1,5 +1,3 @@
-"use client";
-
 import { setDefaultOptions } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -29,15 +27,26 @@ export interface Event {
     name: string;
   };
 }
+const getEvents = unstable_cache(
+  async () => {
+    const response = await api.get<Events>("/events");
+    return response.data;
+  },
+  ["events"],
+  {
+    tags: ["events"],
+  },
+);
 
-export function EventList() {
-  const { data: events } = useQuery({
-    queryKey: ["events"],
-    queryFn: async () => {
-      const response = await api.get<Events>("/events");
-      return response.data;
-    },
-  });
+export async function EventList() {
+  const events = await getEvents();
+  // const { data: events } = useQuery({
+  //   queryKey: ["events"],
+  //   queryFn: async () => {
+  //     const response = await api.get<Events>("/events");
+  //     return response.data;
+  //   },
+  // });
 
   if (!events) return;
 
