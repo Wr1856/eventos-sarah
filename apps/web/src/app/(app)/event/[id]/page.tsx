@@ -6,10 +6,13 @@ import {
   isBefore,
   isPast,
   isToday,
+  setDefaultOptions,
 } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Clock4, User, Users2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +24,6 @@ import {
 import { Title } from "@/components/ui/title";
 import { api } from "@/lib/api";
 import { cn, formatTowDigits } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
 import { usePermission } from "@/auth/use-auth";
 import { eventSchema } from "@next-acl/auth";
 
@@ -49,6 +51,8 @@ export interface EventType {
   };
   createdAt: Date;
 }
+
+setDefaultOptions({ locale: ptBR });
 
 export default function Event() {
   const { id } = useParams<{ id: string }>();

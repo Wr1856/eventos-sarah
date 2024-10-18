@@ -1,28 +1,47 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { z } from "zod";
 
-import { signIn } from "@/auth-config";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import background from "@/assets/sun-tornado.svg";
 import logoSarah from "@/assets/logo_sarah.svg";
 import { Title } from "@/components/ui/title";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { handleLogin } from "./actions";
+import { TextError } from "@/components/text-error";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().email({ message: "Email invalido." }),
+  password: z
+    .string()
+    .min(6, { message: "A senha deve conter no minimo 6 caracters." }),
 });
 
+export type LoginProps = z.infer<typeof loginSchema>;
+
 export default function SignIn() {
-  async function login(data: FormData) {
-    "use server";
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm<LoginProps>({
+    resolver: zodResolver(loginSchema),
+  });
 
-    const { email, password } = loginSchema.parse(Object.fromEntries(data));
+  const action: () => void = handleSubmit(async (data) => {
+    try {
+      await handleLogin(data);
+    } catch {
+      toast.error("Dados incorretos tente novamente.");
+    }
+  });
 
-    await signIn("credentials", { email, password, redirectTo: "/" });
-  }
   return (
     <div className="w-full h-screen p-5 grid grid-cols-2 gap-10 auto-rows-auto place-items-center">
       <div className="w-full">
@@ -33,7 +52,7 @@ export default function SignIn() {
         />
       </div>
       <form
-        action={login}
+        action={action}
         className="px-20 w-full flex flex-col gap-y-16 items-center justify-center"
       >
         <div className="w-80 flex flex-col gap-y-2 items-center justify-center">
@@ -51,19 +70,25 @@ export default function SignIn() {
               <Label htmlFor="email">E-mail</Label>
               <Input
                 id="email"
-                name="email"
+                {...register("email")}
                 placeholder="example@example.com"
               />
+              <TextError isVisible={!!errors.email?.message}>
+                {errors.email?.message}
+              </TextError>
             </div>
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="password">Senha</Label>
               <Input
                 id="password"
-                name="password"
+                {...register("password")}
                 placeholder="****"
                 type="password"
               />
+              <TextError isVisible={!!errors.password?.message}>
+                {errors.password?.message}
+              </TextError>
             </div>
           </div>
         </div>
