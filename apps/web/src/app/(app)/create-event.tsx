@@ -1,8 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState } from "react";
-import { DayPicker, type DateRange } from "react-day-picker";
+import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import { ptBR } from "react-day-picker/locale";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,16 +43,23 @@ import { cn } from "@/lib/utils";
 import { TextError } from "@/components/text-error";
 
 const createEventSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  location: z.string().min(1),
-  availableSlots: z.coerce.number(),
-  eventType: z.string().min(1),
+  title: z.string().min(1, { message: "O titulo e obrigatorio." }),
+  description: z.string().min(1, { message: "A descricao e obrigatorio." }),
+  location: z.string().min(1, { message: "A localizacao e obrigatorio." }),
+  availableSlots: z.coerce.number().default(0),
+  eventType: z
+    .string({
+      required_error: "O tipo de evento nao pode esta vazio.",
+    })
+    .min(1, { message: "O tipo de evento nao pode estar vazio." }),
   status: z.string().default("ativo"),
-  date: z.object({
-    from: z.date(),
-    to: z.date(),
-  }),
+  date: z.object(
+    {
+      from: z.date(),
+      to: z.date(),
+    },
+    { required_error: "Selecione uma data de inicio e terminio" },
+  ),
 });
 
 type EventProps = z.infer<typeof createEventSchema>;
@@ -61,6 +67,8 @@ type EventProps = z.infer<typeof createEventSchema>;
 export function CreateEventDialog() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+
+  const defaultClassNames = getDefaultClassNames();
 
   const {
     handleSubmit,
@@ -201,6 +209,18 @@ export function CreateEventDialog() {
                         mode="range"
                         selected={value}
                         onSelect={onChange}
+                        classNames={{
+                          today: "border-orange-500",
+                          chevron: "fill-orange-500",
+                          selected: "bg-orange-500",
+                          caption_label: "text-orange-500",
+                          range_start: "bg-orange-500 text-orange-950",
+                          range_end: "bg-orange-500 text-orange-950",
+                          range_middle: "bg-orange-200 text-orange-950",
+                          root: `${defaultClassNames.root} font-base text-orange-50`,
+                          weekday: "text-amber-500",
+                          day: "font-semibold",
+                        }}
                       />
                     </PopoverContent>
                   </PopoverPortal>
