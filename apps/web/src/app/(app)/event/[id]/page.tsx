@@ -180,7 +180,7 @@ export default function Event() {
                     <DialogClose>
                       <Button variant="secondary">Voltar</Button>
                     </DialogClose>
-                    <Button variant="primary">Comfirmar</Button>
+                    <Button variant="primary">Confirmar</Button>
                   </div>
                 </DialogContent>
               </Dialog>
