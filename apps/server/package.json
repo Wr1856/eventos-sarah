@@ -11,7 +11,8 @@
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "studio": "drizzle-kit studio",
-    "seed": "tsx --env-file .env ./src/db/seed.ts"
+    "seed": "tsx --env-file .env ./src/db/seed.ts",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +36,7 @@
     "@types/pg": "^8.11.10",
     "@types/ws": "^8.5.12",
     "drizzle-kit": "^0.25.0",
-    "tsx": "^4.19.1"
+    "tsx": "^4.19.1",
+    "vitest": "^1.0.0"
   }
 }

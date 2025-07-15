@@ -16,5 +16,5 @@ export const ok = (data: any): HttpResponse => ({
 
 export const serverError = (): HttpResponse => ({
   data: new Error('An unexpected erro has ocurred'),
-  statusCode: HttpStatusCode.OK,
+  statusCode: HttpStatusCode.ServerError,
 })
