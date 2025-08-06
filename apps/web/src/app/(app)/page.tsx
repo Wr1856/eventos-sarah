@@ -1,6 +1,6 @@
-import { EventList } from "@/components/event-list";
+import { EventList } from "./events/event-list";
 import { Title } from "@/components/ui/title";
-import { CreateEventDialog } from "./create-event";
+import { CreateEventDialog } from "./events/create-event";
 import { ability } from "@/auth";
 
 export const revalidate = 900;

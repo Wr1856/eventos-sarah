@@ -90,7 +90,7 @@ export function CreateEventDialog() {
       await api.post("/events", body);
       toast.success("Evento criado com sucesso");
       queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch (error) {
+    } catch {
       toast.error("Um erro inesperado ocorreu, tente novamente");
     }
   }
@@ -175,7 +175,7 @@ export function CreateEventDialog() {
             <Controller
               {...register("date")}
               control={control}
-              render={({ field: { onChange, value, ref } }) => (
+              render={({ field: { onChange, value } }) => (
                 <Popover>
                   <PopoverTrigger asChild>
                     <button

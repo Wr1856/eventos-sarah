@@ -6,10 +6,8 @@ import { Ban, Hand } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
-import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import type { EventRowProps } from "./event-row";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { handleSubscribe, handleUnsubscribe } from "./actions";
 
 type ActionsEventProps = EventRowProps;

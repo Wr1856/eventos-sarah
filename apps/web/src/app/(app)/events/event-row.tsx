@@ -1,6 +1,6 @@
 import { format, isPast } from "date-fns";
 import { Pencil, Trash } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ export async function EventRow({ data }: EventRowProps) {
 
   return (
     <Link
-      href={`/event/${data.id}`}
+      href={`/events/${data.id}`}
       className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex gap-3 items-center justify-between ring-2 ring-transparent ring-offset-2 ring-offset-zinc-950 hover:ring-orange-500"
     >
       <div>
