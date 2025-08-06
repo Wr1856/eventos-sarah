@@ -18,6 +18,8 @@ import { db } from "./db";
 import { events, registration, users } from "./db/schema";
 import { EventEmitter } from "./lib/event-emiter";
 import { makeLoginController } from "./main/factories/controller/login";
+import { makeCreateEventController } from "./main/factories/controller/create-event";
+import { makeSubscribeEventController } from "./main/factories/controller/subscribe-event";
 import { adaptFastifyRoute } from "./main/adapter/fastify-route-adapter";
 import { env } from "./config/env";
 import { getUserPermission } from "./utils/get-user-permission";
@@ -125,47 +127,7 @@ app.post(
       }),
     },
   },
-  async (req, reply) => {
-    const {
-      title,
-      description,
-      location,
-      availableSlots,
-      eventType,
-      status,
-      startDate,
-      endDate,
-      organizerId,
-    } = req.body;
-
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, organizerId));
-
-    const { cannot } = getUserPermission(user.id, user.role);
-
-    if (cannot("create", "Event")) {
-      throw new Error("You're not allowed");
-    }
-
-    const [event] = await db
-      .insert(events)
-      .values({
-        title,
-        description,
-        location,
-        availableSlots,
-        eventType,
-        status,
-        startDate,
-        endDate,
-        organizerId,
-      })
-      .returning();
-
-    return reply.send({ event });
-  },
+  adaptFastifyRoute(makeCreateEventController()),
 );
 
 app.put(
@@ -330,100 +292,7 @@ app.patch(
       }),
     },
   },
-  async (req, reply) => {
-    const { userId } = req.body;
-    const { eventId } = req.params;
-
-    const [eventData] = await db
-      .select()
-      .from(events)
-      .where(eq(events.id, eventId));
-
-    const [userData] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId));
-
-    const { cannot } = getUserPermission(userData.id, userData.role);
-
-    if (cannot("subscribe", "Event")) {
-      throw new Error("You are not allowed to subscribe in event");
-    }
-
-    const eventAvailableSlotsCount = db.$with("event_available_slots_count").as(
-      db
-        .select({
-          eventId: registration.eventId,
-          slotsCount: sql`COUNT(${registration.id})`.as("slotsCount"),
-        })
-        .from(registration)
-        .where(eq(registration.eventId, eventId))
-        .groupBy(registration.eventId),
-    );
-
-    const result = await db
-      .with(eventAvailableSlotsCount)
-      .select({
-        isAvailable: sql`COALESCE(${events.availableSlots}, 0) > COALESCE(${eventAvailableSlotsCount.slotsCount}, 0)`,
-      })
-      .from(events)
-      .leftJoin(
-        eventAvailableSlotsCount,
-        eq(events.id, eventAvailableSlotsCount.eventId),
-      )
-      .where(eq(events.id, eventId))
-      .limit(1);
-
-    const { isAvailable } = result[0];
-
-    if (!isAvailable) {
-      return reply
-        .status(410)
-        .send({ message: "this spots for this event are sold out." });
-    }
-
-    const [alreadySubscribed] = await db
-      .select()
-      .from(registration)
-      .where(
-        and(eq(registration.userId, userId), eq(registration.eventId, eventId)),
-      );
-
-    if (alreadySubscribed) {
-      return reply.status(403).send({
-        error:
-          "You cannot register for an event that you have already registered for.",
-      });
-    }
-
-    const [data] = await db
-      .insert(registration)
-      .values({
-        userId,
-        eventId,
-      })
-      .returning();
-
-    const [user] = await db
-      .select({
-        id: registration.id,
-        name: users.name,
-        email: users.email,
-        registrationDate: registration.registrationDate,
-      })
-      .from(registration)
-      .where(
-        and(eq(registration.eventId, eventId), eq(registration.userId, userId)),
-      )
-      .leftJoin(users, eq(users.id, userId));
-
-    eventEmitter.emit(eventId, {
-      key: "user_registration",
-      message: user,
-    });
-
-    return reply.send({ registration: data });
-  },
+  adaptFastifyRoute(makeSubscribeEventController()),
 );
 
 app.patch(
