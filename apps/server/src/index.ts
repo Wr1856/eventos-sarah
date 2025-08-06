@@ -22,6 +22,7 @@ import { adaptFastifyRoute } from "./main/adapter/fastify-route-adapter";
 import { env } from "./config/env";
 import { getUserPermission } from "./utils/get-user-permission";
 import { eventSchema } from "@next-acl/auth";
+import { errorHandler } from "./main/handlers/error-handler";
 
 const app = Fastify().withTypeProvider<ZodTypeProvider>();
 const eventEmitter = EventEmitter();
@@ -32,6 +33,8 @@ app.register(cors, {
 app.register(websocket);
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+
+errorHandler(app);
 
 app.post(
   "/login",
