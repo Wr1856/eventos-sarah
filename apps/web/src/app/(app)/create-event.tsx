@@ -18,20 +18,20 @@ import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@next-acl/ui";
 import { api } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Title } from "@/components/ui/title";
-import { Input } from "@/components/ui/input";
+import { Button } from "@next-acl/ui";
+import { Title } from "@next-acl/ui";
+import { Input } from "@next-acl/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from "@next-acl/ui";
+import { Label } from "@next-acl/ui";
+import { Textarea } from "@next-acl/ui";
 import {
   Popover,
   PopoverArrow,

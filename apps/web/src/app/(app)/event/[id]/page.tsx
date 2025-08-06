@@ -14,14 +14,14 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@next-acl/ui";
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Title } from "@/components/ui/title";
+} from "@next-acl/ui";
+import { Title } from "@next-acl/ui";
 import { api } from "@/lib/api";
 import { cn, formatTowDigits } from "@/lib/utils";
 import { usePermission } from "@/auth/use-auth";

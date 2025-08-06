@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import { api } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { Button } from "@next-acl/ui";
 import type { EventRowProps } from "./event-row";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { handleSubscribe, handleUnsubscribe } from "./actions";

@@ -1,5 +1,5 @@
 import { EventList } from "@/components/event-list";
-import { Title } from "@/components/ui/title";
+import { Title } from "@next-acl/ui";
 import { CreateEventDialog } from "./create-event";
 import { ability } from "@/auth";
 
