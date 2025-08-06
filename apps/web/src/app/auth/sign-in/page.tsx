@@ -4,12 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Button } from "@next-acl/ui";
+import { Label } from "@next-acl/ui";
+import { Input } from "@next-acl/ui";
 import background from "@/assets/sun-tornado.svg";
 import logoSarah from "@/assets/logo_sarah.svg";
-import { Title } from "@/components/ui/title";
+import { Title } from "@next-acl/ui";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { handleLogin } from "./actions";

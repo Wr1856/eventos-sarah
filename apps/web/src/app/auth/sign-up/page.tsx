@@ -10,17 +10,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import background from "@/assets/sun-tornado.svg";
 import logoSarah from "@/assets/logo_sarah.svg";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Label } from "@next-acl/ui";
+import { Input } from "@next-acl/ui";
+import { Button } from "@next-acl/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Title } from "@/components/ui/title";
+} from "@next-acl/ui";
+import { Title } from "@next-acl/ui";
 import { TextError } from "@/components/text-error";
 import { createUser } from "./actions";
 

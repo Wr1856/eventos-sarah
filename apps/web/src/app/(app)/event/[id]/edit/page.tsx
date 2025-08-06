@@ -1,16 +1,16 @@
 import { TextError } from "@/components/text-error";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@next-acl/ui";
+import { Input } from "@next-acl/ui";
+import { Label } from "@next-acl/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Title } from "@/components/ui/title";
+} from "@next-acl/ui";
+import { Textarea } from "@next-acl/ui";
+import { Title } from "@next-acl/ui";
 
 export default function EditEvent() {
   return (
