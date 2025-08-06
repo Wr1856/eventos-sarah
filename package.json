@@ -7,7 +7,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "studio": "turbo run studio",
-    "migrate": "turbo run migrate"
+    "migrate": "turbo run migrate",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "turbo": "^2.1.3"
