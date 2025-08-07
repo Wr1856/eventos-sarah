@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 
 export async function getCurrentUser(): Promise<string | null> {
   const session = await auth();
-  const userId = session?.user.id;
+  const userId = session?.user?.id;
   return userId ?? null;
 }
 
@@ -22,9 +22,13 @@ export async function getCurrentMembership(): Promise<
     return null;
   }
 
-  const response = await api.get(`/user/${userId}`);
-
-  return response.data;
+  try {
+    const response = await api.get(`/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch current membership", error);
+    return null;
+  }
 }
 
 export async function ability(): Promise<AppAbility | null> {
