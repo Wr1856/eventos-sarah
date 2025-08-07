@@ -6,7 +6,6 @@ setDefaultOptions({ locale: ptBR });
 import { api } from "@/lib/api";
 import { EventRow } from "./event-row";
 import { unstable_cache } from "next/cache";
-import { useQuery } from "@tanstack/react-query";
 
 export type Events = Event[];
 
