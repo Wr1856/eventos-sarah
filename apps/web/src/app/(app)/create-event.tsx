@@ -80,11 +80,16 @@ export function CreateEventDialog() {
   });
 
   async function createEvent(data: EventProps) {
+    if (!session?.user?.id) {
+      toast.error("Você precisa estar autenticado para criar um evento.");
+      return;
+    }
+
     const body = {
       ...data,
       startDate: data.date.from.toISOString(),
       endDate: data.date.to.toISOString(),
-      organizerId: session?.user.id,
+      organizerId: session.user.id,
     };
     try {
       await api.post("/events", body);
