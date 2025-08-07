@@ -11,11 +11,16 @@ export async function getCurrentUser() {
 export async function getCurrentMembership(): Promise<{
   userId: string;
   role: "organizador" | "visualizador" | "participante";
-}> {
+} | null> {
   const userId = await getCurrentUser();
-  const response = await api.get(`/user/${userId}`);
 
-  return response.data;
+  try {
+    const response = await api.get(`/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch current membership", error);
+    return null;
+  }
 }
 
 export async function ability() {
