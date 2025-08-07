@@ -1,34 +1,41 @@
-import { defineAbilityFor } from "@next-acl/auth";
+import { defineAbilityFor, type AppAbility } from "@next-acl/auth";
 
 import { auth } from "@/auth-config";
 import { api } from "@/lib/api";
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<string | null> {
   const session = await auth();
-  return session?.user.id;
+  const userId = session?.user.id;
+  return userId ?? null;
 }
 
-export async function getCurrentMembership(): Promise<{
-  userId: string;
-  role: "organizador" | "visualizador" | "participante";
-}> {
+export async function getCurrentMembership(): Promise<
+  | {
+      userId: string;
+      role: "organizador" | "visualizador" | "participante";
+    }
+  | null
+> {
   const userId = await getCurrentUser();
+
+  if (!userId) {
+    return null;
+  }
+
   const response = await api.get(`/user/${userId}`);
 
   return response.data;
 }
 
-export async function ability() {
+export async function ability(): Promise<AppAbility | null> {
   const membership = await getCurrentMembership();
 
   if (!membership) {
     return null;
   }
 
-  const ability = defineAbilityFor({
+  return defineAbilityFor({
     id: membership.userId,
     role: membership.role,
   });
-
-  return ability;
 }
