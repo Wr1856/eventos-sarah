@@ -5,12 +5,15 @@
     "check-types": "tsc --noEmit",
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "lint": "pnpm -r lint",
     "studio": "turbo run studio",
     "migrate": "turbo run migrate",
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "eslint": "^8",
     "turbo": "^2.1.3"
   },
   "packageManager": "pnpm@9.12.1"
