@@ -31,15 +31,19 @@ export async function registerRoutes(app: FastifyInstance) {
         }),
       },
     },
-    async (req, res) => {
+    async (req, reply) => {
       const { userId } = req.params as { userId: string };
       const [user] = await db
         .select({ id: users.id, role: users.role })
         .from(users)
         .where(eq(users.id, userId));
 
+      if (!user) {
+        return reply.status(404).send({ message: "User not found" });
+      }
+
       return {
-        userId: user.id,
+        id: user.id,
         role: user.role,
       };
     },
