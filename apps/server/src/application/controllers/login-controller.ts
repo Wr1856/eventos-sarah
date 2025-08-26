@@ -1,6 +1,6 @@
 import type { Authentication } from '../../domain/usecases/authentication'
 import type { Controller } from '../contracts/controller'
-import { ok, serverError, type HttpResponse } from '../helpers/http'
+import { ok, serverError, unauthorized, type HttpResponse } from '../helpers/http'
 
 type Request = {
   email: string
@@ -14,6 +14,9 @@ export class LoginController implements Controller {
       const data = await this.authentication({ email, password })
       return ok(data)
     } catch (error) {
+      if (error instanceof Error && error.message === 'The data provided is invalid.') {
+        return unauthorized(error)
+      }
       return serverError()
     }
   }

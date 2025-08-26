@@ -30,6 +30,18 @@ describe('LoginController', () => {
     const result = await sut.handle({ email, password })
 
     expect(result.statusCode).toBe(HttpStatusCode.ServerError)
-    expect(result.data).toEqual(new Error('An unexpected erro has ocurred'))
+    expect(result.data).toEqual(new Error('An unexpected error has occurred'))
+  })
+
+  it('should return 401 when authentication fails with invalid data', async () => {
+    const authentication = vi
+      .fn()
+      .mockRejectedValue(new Error('The data provided is invalid.'))
+    const sut = new LoginController(authentication)
+
+    const result = await sut.handle({ email, password })
+
+    expect(result.statusCode).toBe(HttpStatusCode.Unauthorized)
+    expect(result.data).toEqual(new Error('The data provided is invalid.'))
   })
 })
