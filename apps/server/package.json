@@ -12,8 +12,9 @@
     "migrate": "drizzle-kit migrate",
     "studio": "drizzle-kit studio",
     "seed": "tsx --env-file .env ./src/db/seed.ts",
-    "test": "vitest",
-    "lint": "eslint src --ext .ts,.tsx"
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts,.tsx",
+    "check-types": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",

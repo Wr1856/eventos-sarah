@@ -1,7 +1,6 @@
 import { LogOut, List } from "lucide-react";
 
-import { Button } from "../ui/button";
-import { CustomLink } from "../ui/link";
+import { Button, CustomLink } from "@next-acl/ui";
 import { signOut } from "@/auth-config";
 
 export function Navbar() {
