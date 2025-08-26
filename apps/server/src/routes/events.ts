@@ -55,11 +55,14 @@ export async function registerRoutes(app: FastifyInstance) {
         .select()
         .from(users)
         .where(eq(users.id, organizerId));
+      if (!user) {
+        return reply.status(404).send({ error: "Organizer not found" });
+      }
 
       const { cannot } = getUserPermission(user.id, user.role);
 
       if (cannot("create", "Event")) {
-        throw new Error("You're not allowed");
+        return reply.status(403).send({ error: "You're not allowed" });
       }
 
       const [event] = await db
@@ -128,18 +131,25 @@ export async function registerRoutes(app: FastifyInstance) {
         .select()
         .from(events)
         .where(eq(events.id, eventId));
+      if (!eventData) {
+        return reply.status(404).send({ error: "Event not found" });
+      }
 
       const [user] = await db
         .select()
         .from(users)
         .where(eq(users.id, organizerId));
 
+      if (!user) {
+        return reply.status(404).send({ error: "Organizer not found" });
+      }
+
       const { cannot } = getUserPermission(user.id, user.role);
 
       if (
         cannot("update", eventSchema.parse({ userId: eventData.organizerId }))
       ) {
-        throw new Error("You're not allowed");
+        return reply.status(403).send({ error: "You're not allowed" });
       }
 
       const [event] = await db
@@ -182,15 +192,22 @@ export async function registerRoutes(app: FastifyInstance) {
         .select()
         .from(events)
         .where(eq(events.id, eventId));
+      if (!eventData) {
+        return reply.status(404).send({ error: "Event not found" });
+      }
 
       const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+      if (!user) {
+        return reply.status(404).send({ error: "Organizer not found" });
+      }
 
       const { cannot } = getUserPermission(user.id, user.role);
 
       if (
         cannot("update", eventSchema.parse({ userId: eventData.organizerId }))
       ) {
-        throw new Error("This event are not your!");
+        return reply.status(403).send({ error: "This event are not your!" });
       }
 
       const [event] = await db
@@ -224,15 +241,22 @@ export async function registerRoutes(app: FastifyInstance) {
         .select()
         .from(events)
         .where(eq(events.id, eventId));
+      if (!eventData) {
+        return reply.status(404).send({ error: "Event not found" });
+      }
 
       const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+      if (!user) {
+        return reply.status(404).send({ error: "Organizer not found" });
+      }
 
       const { cannot } = getUserPermission(user.id, user.role);
 
       if (
         cannot("delete", eventSchema.parse({ userId: eventData.organizerId }))
       ) {
-        throw new Error("This event are not your!");
+        return reply.status(403).send({ error: "This event are not your!" });
       }
 
       const [event] = await db
@@ -264,16 +288,25 @@ export async function registerRoutes(app: FastifyInstance) {
         .select()
         .from(events)
         .where(eq(events.id, eventId));
+      if (!eventData) {
+        return reply.status(404).send({ error: "Event not found" });
+      }
 
       const [userData] = await db
         .select()
         .from(users)
         .where(eq(users.id, userId));
 
+      if (!userData) {
+        return reply.status(404).send({ error: "User not found" });
+      }
+
       const { cannot } = getUserPermission(userData.id, userData.role);
 
       if (cannot("subscribe", "Event")) {
-        throw new Error("You are not allowed to subscribe in event");
+        return reply
+          .status(403)
+          .send({ error: "You are not allowed to subscribe in event" });
       }
 
       const eventAvailableSlotsCount = db.$with("event_available_slots_count").as(
@@ -372,16 +405,24 @@ export async function registerRoutes(app: FastifyInstance) {
         .select()
         .from(events)
         .where(eq(events.id, eventId));
+      if (!eventData) {
+        return reply.status(404).send({ error: "Event not found" });
+      }
 
       const [userData] = await db
         .select()
         .from(users)
         .where(eq(users.id, userId));
+      if (!userData) {
+        return reply.status(404).send({ error: "User not found" });
+      }
 
       const { cannot } = getUserPermission(userData.id, userData.role);
 
       if (cannot("subscribe", "Event")) {
-        throw new Error("You are not allowed to subscribe in event");
+        return reply
+          .status(403)
+          .send({ error: "You are not allowed to subscribe in event" });
       }
 
       await db
@@ -488,6 +529,9 @@ export async function registerRoutes(app: FastifyInstance) {
           eq(eventAvailableSlotsCount.eventId, events.id),
         )
         .leftJoin(users, eq(users.id, events.organizerId));
+      if (!result) {
+        return reply.status(404).send({ error: "Event not found" });
+      }
 
       return reply.send(result);
     },
