@@ -1,6 +1,6 @@
 import { format, isPast } from "date-fns";
 import { Pencil, Trash } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "@next-acl/ui";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";

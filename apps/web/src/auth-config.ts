@@ -81,10 +81,10 @@ export const {
 
       return token;
     },
-    session({ session, ...params }) {
-      if ("token" in params && session.user) {
-        session.user = params.token.user;
-        session.user.id = params.token.sub;
+    session({ session, token }) {
+      if (token && session.user) {
+        session.user = token.user as typeof session.user;
+        session.user.id = token.sub ?? "";
       }
 
       return session;

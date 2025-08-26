@@ -2,14 +2,20 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "_version": "20.1.0",
   "compilerOptions": {
-    "lib": ["es2023"],
+    "lib": [
+      "es2023"
+    ],
     "outDir": "dist",
     "module": "node16",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node16"
+    "moduleResolution": "node16",
+    "jsx": "react-jsx",
+    "noImplicitAny": false
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

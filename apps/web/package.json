@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@casl/react": "^4.0.0",

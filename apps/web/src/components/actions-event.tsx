@@ -6,10 +6,8 @@ import { Ban, Hand } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
-import { api } from "@/lib/api";
 import { Button } from "@next-acl/ui";
 import type { EventRowProps } from "./event-row";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { handleSubscribe, handleUnsubscribe } from "./actions";
 
 type ActionsEventProps = EventRowProps;
@@ -20,26 +18,28 @@ export function ActionsEvent({ data }: ActionsEventProps) {
 
   function subscribe() {
     try {
-      handleSubscribe({ id: data.id, userId: session?.user.id });
+      handleSubscribe({ id: data.id, userId: session?.user.id ?? "" });
       toast.success("Inscricao realizada com sucesso!");
     } catch (error) {
-      toast.error(error.response.data.error);
+      const message = (error as any)?.response?.data?.error ?? "Erro ao realizar inscrição";
+      toast.error(message);
     }
   }
 
   function unsubscribe() {
     try {
-      handleUnsubscribe({ id: data.id, userId: session?.user.id });
+      handleUnsubscribe({ id: data.id, userId: session?.user.id ?? "" });
       toast.success("Voce cancelou sua inscrição!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error) {
-      toast.error(error.response.data.error);
+      const message = (error as any)?.response?.data?.error ?? "Erro ao cancelar inscrição";
+      toast.error(message);
     }
   }
 
   const isEventExpired = isPast(data.endDate);
 
-  return data.participants.includes(session?.user.id) ? (
+  return data.participants.includes(session?.user.id ?? "") ? (
     <Button
       variant="danger"
       onClick={unsubscribe}
