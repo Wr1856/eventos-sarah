@@ -1,10 +1,18 @@
+"use client";
+
 import { format, isPast } from "date-fns";
 import { Pencil, Trash } from "lucide-react";
 import { Button } from "@next-acl/ui";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import type { MouseEvent } from "react";
 
 import { cn } from "@/lib/utils";
-import { ability } from "@/auth";
+import { api } from "@/lib/api";
+import { usePermission } from "@/auth/use-auth";
 import { ActionsEvent } from "./actions-event";
 
 export interface EventRowProps {
@@ -26,18 +34,29 @@ export interface EventRowProps {
   };
 }
 
-export async function EventRow({ data }: EventRowProps) {
-  const permission = await ability();
+export function EventRow({ data }: EventRowProps) {
+  const permission = usePermission();
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
-  // async function handleDeleteEvent() {
-  //   try {
-  //     await api.delete(`/event/${data.id}/${session?.user.id}`);
-  //     toast.info("Voce excluiu o evento!");
-  //     queryClient.invalidateQueries({ queryKey: ["events"] });
-  //   } catch {
-  //     toast.error("Voce nao pode excluir um evento que nao foi voce que criou");
-  //   }
-  // }
+  async function handleDeleteEvent(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    try {
+      await api.delete(`/event/${data.id}/${session?.user.id}`);
+      toast.info("Voce excluiu o evento!");
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    } catch {
+      toast.error(
+        "Voce nao pode excluir um evento que nao foi voce que criou",
+      );
+    }
+  }
+
+  function handleEditEvent(e: MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    router.push(`/event/${data.id}/edit`);
+  }
 
   const parseDate = format(data.startDate, "dd 'de' MMMM yyyy");
 
@@ -87,11 +106,21 @@ export async function EventRow({ data }: EventRowProps) {
         {permission?.can("manage", "Event") && (
           <>
             <div className="w-px h-10 bg-zinc-800 shrink-0" />
-            <Button variant="tertiary" size="icon" type="button">
+            <Button
+              variant="tertiary"
+              size="icon"
+              type="button"
+              onClick={handleDeleteEvent}
+            >
               <Trash className="size-4 shrink-0" />
             </Button>
 
-            <Button variant="tertiary" size="icon" type="button">
+            <Button
+              variant="tertiary"
+              size="icon"
+              type="button"
+              onClick={handleEditEvent}
+            >
               <Pencil className="size-4 shrink-0" />
             </Button>
           </>
