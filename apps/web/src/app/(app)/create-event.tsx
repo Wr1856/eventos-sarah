@@ -239,7 +239,7 @@ export function CreateEventDialog() {
 
           <div className="col-span-2 flex flex-1 items-center justify-end gap-2">
             <DialogClose asChild>
-              <Button variant="secondary" type="submit">
+              <Button variant="secondary" type="button">
                 Voltar
               </Button>
             </DialogClose>
