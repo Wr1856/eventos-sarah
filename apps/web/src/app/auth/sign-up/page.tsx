@@ -52,7 +52,7 @@ export default function SignUp() {
 
   const action: () => void = handleSubmit(async (data) => {
     try {
-      createUser(data);
+      await createUser(data);
       toast.success("Conta criada com sucesso, va para tela de login.");
     } catch {
       toast.error("Ocorreu um erro tente novamente");
