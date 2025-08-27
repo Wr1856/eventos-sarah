@@ -3,23 +3,32 @@ import bcrypt from "bcrypt";
 import { db, queryClient } from ".";
 import { events, registration, users } from "./schema";
 
+/**
+ * Preenche o banco de dados com informações iniciais para facilitar o
+ * desenvolvimento. Os dados incluem um organizador padrão, alguns participantes
+ * e eventos de exemplo.
+ */
 const seed = async () => {
+  // Remove todos os registros para garantir um estado limpo
   await db.delete(registration);
   await db.delete(events);
   await db.delete(users);
 
+  // Senha padrão "123456" compartilhada por todas as contas criadas aqui
   const password = await bcrypt.hash("123456", 12);
 
+  // Usuário organizador padrão para facilitar o login inicial
   const [user] = await db
     .insert(users)
     .values({
-      name: "John Doe",
-      email: "john@john.com",
+      name: "Usuário Teste",
+      email: "Teste@teste.com",
       role: "organizador",
       password,
     })
     .returning();
 
+  // Cria alguns participantes para demonstrar inscrições
   const participantes = await db
     .insert(users)
     .values([
@@ -56,6 +65,7 @@ const seed = async () => {
     ])
     .returning();
 
+  // Eventos de exemplo com diferentes status e vagas
   const eventsData = await db
     .insert(events)
     .values([
@@ -106,6 +116,7 @@ const seed = async () => {
     ])
     .returning();
 
+  // Inscreve todos os participantes no primeiro evento
   for (const participant of participantes) {
     await db.insert(registration).values({
       eventId: eventsData[0].id,
@@ -113,6 +124,7 @@ const seed = async () => {
     });
   }
 
+  // Inscrições adicionais para simular eventos com vagas ocupadas
   await db.insert(registration).values([
     {
       eventId: eventsData[1].id,

@@ -32,8 +32,11 @@ export default function SignIn() {
     formState: { errors },
   } = useForm<LoginProps>({
     resolver: zodResolver(loginSchema),
+    // Credenciais padrão para facilitar o acesso com o usuário semeado
+    defaultValues: { email: "Teste@teste.com", password: "123456" },
   });
 
+  // Envia as credenciais e trata possíveis erros de autenticação
   const action: () => void = handleSubmit(async (data) => {
     try {
       await handleLogin(data);
@@ -71,7 +74,7 @@ export default function SignIn() {
               <Input
                 id="email"
                 {...register("email")}
-                placeholder="example@example.com"
+                placeholder="Teste@teste.com"
               />
               <TextError isVisible={!!errors.email?.message}>
                 {errors.email?.message}
@@ -83,7 +86,7 @@ export default function SignIn() {
               <Input
                 id="password"
                 {...register("password")}
-                placeholder="****"
+                placeholder="123456"
                 type="password"
               />
               <TextError isVisible={!!errors.password?.message}>
