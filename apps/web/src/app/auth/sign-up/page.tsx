@@ -52,6 +52,7 @@ export default function SignUp() {
 
   const action: () => void = handleSubmit(async (data) => {
     try {
+      // Aguarda a criação do usuário para garantir que o cadastro foi concluído
       await createUser(data);
       toast.success("Conta criada com sucesso, va para tela de login.");
     } catch {

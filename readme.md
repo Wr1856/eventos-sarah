@@ -1,4 +1,25 @@
- Tópicos
+## Como executar
+
+1. Copie o arquivo `.env-example` para `.env` e ajuste as variáveis de ambiente.
+2. Inicie o banco de dados: `docker compose up -d`.
+3. Instale as dependências e prepare o banco com dados de exemplo:
+
+   ```bash
+   pnpm setup
+   ```
+
+4. Em terminais separados, suba o backend e o frontend:
+
+   ```bash
+   pnpm --filter server dev
+   pnpm --filter web dev
+   ```
+
+O banco é populado com um organizador (`Teste@teste.com` / `123456`), cinco participantes e eventos demonstrativos. A tela de login já vem preenchida com essas credenciais para agilizar os testes.
+
+---
+
+Tópicos
 
 1. **Funcionalidades Essenciais**
    - **Criação de eventos**: workshops, palestras, aulas, etc.
