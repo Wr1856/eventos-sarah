@@ -6,6 +6,7 @@ setDefaultOptions({ locale: ptBR });
 import { api } from "@/lib/api";
 import { EventRow } from "./event-row";
 import { unstable_cache } from "next/cache";
+import { EventsNotifier } from "./events-notifier";
 
 export type Events = Event[];
 
@@ -50,10 +51,13 @@ export async function EventList() {
   if (!events) return;
 
   return (
-    <div className="h-[60vh] space-y-4 mt-11 px-24 py-3 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar scrollbar-thumb-zinc-800 scrollbar-track-zinc-900 overflow-y-auto">
-      {events.map((event) => (
-        <EventRow key={event.id} data={event} />
-      ))}
-    </div>
+    <>
+      <div className="h-[60vh] space-y-4 mt-11 px-24 py-3 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar scrollbar-thumb-zinc-800 scrollbar-track-zinc-900 overflow-y-auto">
+        {events.map((event) => (
+          <EventRow key={event.id} data={event} />
+        ))}
+      </div>
+      <EventsNotifier eventIds={events.map((event) => event.id)} />
+    </>
   );
 }
