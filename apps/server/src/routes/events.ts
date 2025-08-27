@@ -175,18 +175,16 @@ export async function registerRoutes(app: FastifyInstance) {
   app.patch(
     "/event/:eventId/cancel",
     {
+      preHandler: [app.authenticate],
       schema: {
         params: z.object({
           eventId: z.string().cuid2(),
-        }),
-        body: z.object({
-          userId: z.string().cuid2(),
         }),
       },
     },
     async (req, reply) => {
       const { eventId } = req.params as { eventId: string };
-      const { userId } = req.body as { userId: string };
+      const userId = req.userId;
 
       const [eventData] = await db
         .select()
@@ -222,20 +220,18 @@ export async function registerRoutes(app: FastifyInstance) {
   );
 
   app.delete(
-    "/event/:eventId/:userId",
+    "/event/:eventId",
     {
+      preHandler: [app.authenticate],
       schema: {
         params: z.object({
           eventId: z.string().cuid2(),
-          userId: z.string().cuid2(),
         }),
       },
     },
     async (req, reply) => {
-      const { eventId, userId } = req.params as {
-        eventId: string;
-        userId: string;
-      };
+      const { eventId } = req.params as { eventId: string };
+      const userId = req.userId;
 
       const [eventData] = await db
         .select()
@@ -271,17 +267,15 @@ export async function registerRoutes(app: FastifyInstance) {
   app.patch(
     "/event/:eventId/subscribe",
     {
+      preHandler: [app.authenticate],
       schema: {
         params: z.object({
           eventId: z.string().cuid2(),
         }),
-        body: z.object({
-          userId: z.string().cuid2(),
-        }),
       },
     },
     async (req, reply) => {
-      const { userId } = req.body as { userId: string };
+      const userId = req.userId;
       const { eventId } = req.params as { eventId: string };
 
       const [eventData] = await db
@@ -388,17 +382,15 @@ export async function registerRoutes(app: FastifyInstance) {
   app.patch(
     "/event/:eventId/unsubscribe",
     {
+      preHandler: [app.authenticate],
       schema: {
         params: z.object({
           eventId: z.string().cuid2(),
         }),
-        body: z.object({
-          userId: z.string().cuid2(),
-        }),
       },
     },
     async (req, reply) => {
-      const { userId } = req.body as { userId: string };
+      const userId = req.userId;
       const { eventId } = req.params as { eventId: string };
 
       const [eventData] = await db

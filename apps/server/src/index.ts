@@ -12,6 +12,7 @@ import cors from "@fastify/cors";
 
 import { env } from "./config/env";
 import { errorHandler } from "./main/handlers/error-handler";
+import { authMiddleware } from "./main/middlewares/auth-middleware";
 
 import { registerRoutes as registerUserRoutes } from "./routes/users";
 import { registerRoutes as registerEventRoutes } from "./routes/events";
@@ -25,6 +26,7 @@ app.setSerializerCompiler(serializerCompiler);
 
 // Middlewares
 errorHandler(app);
+authMiddleware(app);
 
 // Domain routes
 registerUserRoutes(app);
