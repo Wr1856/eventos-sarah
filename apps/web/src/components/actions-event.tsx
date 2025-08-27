@@ -16,19 +16,20 @@ export function ActionsEvent({ data }: ActionsEventProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
-  function subscribe() {
+  async function subscribe() {
     try {
-      handleSubscribe({ id: data.id, userId: session?.user.id ?? "" });
+      await handleSubscribe({ id: data.id, userId: session?.user.id ?? "" });
       toast.success("Inscricao realizada com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error) {
       const message = (error as any)?.response?.data?.error ?? "Erro ao realizar inscrição";
       toast.error(message);
     }
   }
 
-  function unsubscribe() {
+  async function unsubscribe() {
     try {
-      handleUnsubscribe({ id: data.id, userId: session?.user.id ?? "" });
+      await handleUnsubscribe({ id: data.id, userId: session?.user.id ?? "" });
       toast.success("Voce cancelou sua inscrição!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error) {
