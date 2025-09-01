@@ -95,14 +95,13 @@ export const {
       const isOnPublicAPIRoutes = nextUrl.pathname.startsWith("/api/auth");
       const isOnAPIRoutes = nextUrl.pathname.startsWith("/api");
       const publicPaths = ["/", "/event"];
+      const isPublicPath = publicPaths.some(
+        (path) =>
+          nextUrl.pathname === path ||
+          nextUrl.pathname.startsWith(`${path}/`),
+      );
       const isOnPublicPages =
-        nextUrl.pathname.startsWith("/auth") ||
-        publicPaths.some(
-          (path) =>
-            nextUrl.pathname === path ||
-            nextUrl.pathname.startsWith(path + "/"),
-        );
-      const isOnPrivatePages = !isOnPublicPages;
+        nextUrl.pathname.startsWith("/auth") || isPublicPath;
 
       if (isOnPublicAPIRoutes) {
         return true;
@@ -120,7 +119,7 @@ export const {
         return Response.json({ message: "Unauthorized." }, { status: 401 });
       }
 
-      if (isOnPrivatePages && !isLoggedIn) {
+      if (!isOnPublicPages && !isLoggedIn) {
         return false;
       }
 
