@@ -3,6 +3,12 @@
 import { api } from "@/lib/api";
 import { revalidateTag } from "next/cache";
 
+function ensureAuthorized(userId: string) {
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+}
+
 export async function handleSubscribe({
   id,
   userId,
@@ -10,9 +16,7 @@ export async function handleSubscribe({
   id: string;
   userId: string;
 }) {
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+  ensureAuthorized(userId);
   await api.patch(`/event/${id}/subscribe`, {
     userId,
   });
@@ -26,9 +30,7 @@ export async function handleUnsubscribe({
   id: string;
   userId: string;
 }) {
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+  ensureAuthorized(userId);
   await api.patch(`/event/${id}/unsubscribe`, {
     userId,
   });

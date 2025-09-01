@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isPast } from "date-fns";
 import { Ban, Hand } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@next-acl/ui";
@@ -14,11 +15,20 @@ type ActionsEventProps = EventRowProps;
 
 export function ActionsEvent({ data }: ActionsEventProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
-  async function subscribe() {
+  async function ensureAuthenticated() {
     if (!session?.user) {
       await signIn();
+      router.push("/auth/sign-in");
+      return false;
+    }
+    return true;
+  }
+
+  async function subscribe() {
+    if (!(await ensureAuthenticated())) {
       return;
     }
     try {
@@ -32,8 +42,7 @@ export function ActionsEvent({ data }: ActionsEventProps) {
   }
 
   async function unsubscribe() {
-    if (!session?.user) {
-      await signIn();
+    if (!(await ensureAuthenticated())) {
       return;
     }
     try {
