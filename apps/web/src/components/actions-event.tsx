@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { isPast } from "date-fns";
 import { Ban, Hand } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import { Button } from "@next-acl/ui";
@@ -17,8 +17,12 @@ export function ActionsEvent({ data }: ActionsEventProps) {
   const queryClient = useQueryClient();
 
   async function subscribe() {
+    if (!session?.user) {
+      await signIn();
+      return;
+    }
     try {
-      await handleSubscribe({ id: data.id, userId: session?.user.id ?? "" });
+      await handleSubscribe({ id: data.id, userId: session.user.id });
       toast.success("Inscricao realizada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error) {
@@ -28,8 +32,12 @@ export function ActionsEvent({ data }: ActionsEventProps) {
   }
 
   async function unsubscribe() {
+    if (!session?.user) {
+      await signIn();
+      return;
+    }
     try {
-      await handleUnsubscribe({ id: data.id, userId: session?.user.id ?? "" });
+      await handleUnsubscribe({ id: data.id, userId: session.user.id });
       toast.success("Voce cancelou sua inscrição!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
     } catch (error) {
