@@ -94,15 +94,26 @@ export const {
 
       const isOnPublicAPIRoutes = nextUrl.pathname.startsWith("/api/auth");
       const isOnAPIRoutes = nextUrl.pathname.startsWith("/api");
-      const isOnPublicPages = nextUrl.pathname.startsWith("/auth");
+      const publicPaths = ["/", "/event"];
+      const isOnPublicPages =
+        nextUrl.pathname.startsWith("/auth") ||
+        publicPaths.some(
+          (path) =>
+            nextUrl.pathname === path ||
+            nextUrl.pathname.startsWith(path + "/"),
+        );
       const isOnPrivatePages = !isOnPublicPages;
 
       if (isOnPublicAPIRoutes) {
         return true;
       }
 
-      if (isOnPublicPages && isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
+      if (isOnPublicPages) {
+        if (isLoggedIn && nextUrl.pathname.startsWith("/auth")) {
+          return Response.redirect(new URL("/", nextUrl));
+        }
+
+        return true;
       }
 
       if (isOnAPIRoutes && !isLoggedIn) {
