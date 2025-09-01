@@ -1,14 +1,13 @@
 ## Como executar
 
-1. Copie o arquivo `.env-example` para `.env` e ajuste as variáveis de ambiente.
-2. Inicie o banco de dados: `docker compose up -d`.
-3. Instale as dependências e prepare o banco com dados de exemplo:
+1. Copie o arquivo `apps/server/.env-example` para `apps/server/.env`. Esse arquivo já inclui a URL do banco de dados Neon utilizada pelo projeto.
+2. Instale as dependências e prepare o banco com dados de exemplo:
 
    ```bash
    pnpm setup
    ```
 
-4. Em terminais separados, suba o backend e o frontend:
+3. Em terminais separados, suba o backend e o frontend:
 
    ```bash
    pnpm --filter server dev
