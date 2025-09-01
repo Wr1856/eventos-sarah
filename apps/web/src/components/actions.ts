@@ -10,6 +10,9 @@ export async function handleSubscribe({
   id: string;
   userId: string;
 }) {
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
   await api.patch(`/event/${id}/subscribe`, {
     userId,
   });
@@ -23,6 +26,9 @@ export async function handleUnsubscribe({
   id: string;
   userId: string;
 }) {
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
   await api.patch(`/event/${id}/unsubscribe`, {
     userId,
   });
