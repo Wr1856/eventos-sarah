@@ -1,6 +1,8 @@
 import Fastify from 'fastify'
+import websocket from '@fastify/websocket'
 import { serializerCompiler, validatorCompiler, type ZodTypeProvider } from 'fastify-type-provider-zod'
 import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest'
+import { authMiddleware } from '../main/middlewares/auth-middleware'
 
 // Declare mocks
 var selectMock: ReturnType<typeof vi.fn>
@@ -68,6 +70,8 @@ describe('Event routes', () => {
     app = Fastify().withTypeProvider<ZodTypeProvider>()
     app.setValidatorCompiler(validatorCompiler)
     app.setSerializerCompiler(serializerCompiler)
+    await app.register(websocket)
+    authMiddleware(app)
     await app.register(registerRoutes)
   })
 
@@ -204,11 +208,12 @@ describe('Event routes', () => {
       })),
     })
 
-    const response = await app.inject({
-      method: 'PATCH',
-      url: '/event/event1/subscribe',
-      payload: { userId: 'user1' },
-    })
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/event/event1/subscribe',
+        payload: { userId: 'user1' },
+        headers: { authorization: 'Bearer user1' },
+      })
 
     expect(response.statusCode).toBe(200)
     expect(JSON.parse(response.body)).toEqual({
@@ -236,11 +241,12 @@ describe('Event routes', () => {
     })
     cannotMock.mockReturnValueOnce(true)
 
-    const response = await app.inject({
-      method: 'PATCH',
-      url: '/event/event1/subscribe',
-      payload: { userId: 'user1' },
-    })
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/event/event1/subscribe',
+        payload: { userId: 'user1' },
+        headers: { authorization: 'Bearer user1' },
+      })
 
     expect(response.statusCode).toBe(403)
     expect(JSON.parse(response.body)).toEqual({
@@ -262,11 +268,12 @@ describe('Event routes', () => {
       set: vi.fn(() => ({ where: vi.fn().mockResolvedValueOnce([{ id: 'event1', status: 'cancelado' }]) })),
     })
 
-    const response = await app.inject({
-      method: 'PATCH',
-      url: '/event/event1/cancel',
-      payload: { userId: 'user1' },
-    })
+      const response = await app.inject({
+        method: 'PATCH',
+        url: '/event/event1/cancel',
+        payload: { userId: 'user1' },
+        headers: { authorization: 'Bearer user1' },
+      })
 
     expect(response.statusCode).toBe(200)
     expect(JSON.parse(response.body)).toEqual({
@@ -326,10 +333,11 @@ describe('Event routes', () => {
     })
     returningMock.mockResolvedValueOnce([{ id: 'event1' }])
 
-    const response = await app.inject({
-      method: 'DELETE',
-      url: '/event/event1/user1',
-    })
+      const response = await app.inject({
+        method: 'DELETE',
+        url: '/event/event1',
+        headers: { authorization: 'Bearer user1' },
+      })
 
     expect(response.statusCode).toBe(200)
     expect(JSON.parse(response.body)).toEqual({ event: { id: 'event1' } })
@@ -346,10 +354,11 @@ describe('Event routes', () => {
     })
     cannotMock.mockReturnValueOnce(true)
 
-    const response = await app.inject({
-      method: 'DELETE',
-      url: '/event/event1/user1',
-    })
+      const response = await app.inject({
+        method: 'DELETE',
+        url: '/event/event1',
+        headers: { authorization: 'Bearer user1' },
+      })
 
     expect(response.statusCode).toBe(403)
     expect(JSON.parse(response.body)).toEqual({ error: "This event are not your!" })
